@@ -39,6 +39,8 @@ function ScanPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [lookupOpen, setLookupOpen] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const quota = useQuota();
 
   useEffect(() => {
     if (!file) {
