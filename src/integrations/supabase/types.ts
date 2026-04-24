@@ -58,7 +58,9 @@ export type Database = {
           name: string | null
           occasions: string[] | null
           perfumer: string | null
+          plain_description: string | null
           raw_ai: Json | null
+          reaction: string | null
           seasons: string[] | null
           sillage: number | null
           similar_perfumes: Json | null
@@ -85,7 +87,9 @@ export type Database = {
           name?: string | null
           occasions?: string[] | null
           perfumer?: string | null
+          plain_description?: string | null
           raw_ai?: Json | null
+          reaction?: string | null
           seasons?: string[] | null
           sillage?: number | null
           similar_perfumes?: Json | null
@@ -112,7 +116,9 @@ export type Database = {
           name?: string | null
           occasions?: string[] | null
           perfumer?: string | null
+          plain_description?: string | null
           raw_ai?: Json | null
+          reaction?: string | null
           seasons?: string[] | null
           sillage?: number | null
           similar_perfumes?: Json | null
