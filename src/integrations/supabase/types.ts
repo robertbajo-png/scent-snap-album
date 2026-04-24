@@ -14,7 +14,156 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      scans: {
+        Row: {
+          accords: Json | null
+          base_notes: string[] | null
+          brand: string | null
+          confidence: number | null
+          created_at: string
+          description: string | null
+          gender: string | null
+          heart_notes: string[] | null
+          id: string
+          image_url: string | null
+          is_favorite: boolean
+          longevity: number | null
+          name: string | null
+          occasions: string[] | null
+          perfumer: string | null
+          raw_ai: Json | null
+          seasons: string[] | null
+          sillage: number | null
+          similar_perfumes: Json | null
+          top_notes: string[] | null
+          updated_at: string
+          user_id: string
+          user_notes: string | null
+          user_rating: number | null
+          year: number | null
+        }
+        Insert: {
+          accords?: Json | null
+          base_notes?: string[] | null
+          brand?: string | null
+          confidence?: number | null
+          created_at?: string
+          description?: string | null
+          gender?: string | null
+          heart_notes?: string[] | null
+          id?: string
+          image_url?: string | null
+          is_favorite?: boolean
+          longevity?: number | null
+          name?: string | null
+          occasions?: string[] | null
+          perfumer?: string | null
+          raw_ai?: Json | null
+          seasons?: string[] | null
+          sillage?: number | null
+          similar_perfumes?: Json | null
+          top_notes?: string[] | null
+          updated_at?: string
+          user_id: string
+          user_notes?: string | null
+          user_rating?: number | null
+          year?: number | null
+        }
+        Update: {
+          accords?: Json | null
+          base_notes?: string[] | null
+          brand?: string | null
+          confidence?: number | null
+          created_at?: string
+          description?: string | null
+          gender?: string | null
+          heart_notes?: string[] | null
+          id?: string
+          image_url?: string | null
+          is_favorite?: boolean
+          longevity?: number | null
+          name?: string | null
+          occasions?: string[] | null
+          perfumer?: string | null
+          raw_ai?: Json | null
+          seasons?: string[] | null
+          sillage?: number | null
+          similar_perfumes?: Json | null
+          top_notes?: string[] | null
+          updated_at?: string
+          user_id?: string
+          user_notes?: string | null
+          user_rating?: number | null
+          year?: number | null
+        }
+        Relationships: []
+      }
+      taste_profile: {
+        Row: {
+          disliked_accords: string[] | null
+          disliked_notes: string[] | null
+          favorite_accords: string[] | null
+          favorite_notes: string[] | null
+          gender_preference: string | null
+          notes: string | null
+          preferred_intensity: string | null
+          preferred_seasons: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          disliked_accords?: string[] | null
+          disliked_notes?: string[] | null
+          favorite_accords?: string[] | null
+          favorite_notes?: string[] | null
+          gender_preference?: string | null
+          notes?: string | null
+          preferred_intensity?: string | null
+          preferred_seasons?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          disliked_accords?: string[] | null
+          disliked_notes?: string[] | null
+          favorite_accords?: string[] | null
+          favorite_notes?: string[] | null
+          gender_preference?: string | null
+          notes?: string | null
+          preferred_intensity?: string | null
+          preferred_seasons?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
