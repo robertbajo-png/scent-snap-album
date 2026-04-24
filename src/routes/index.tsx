@@ -1,12 +1,13 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Camera, Upload, Sparkles, Loader2, X } from "lucide-react";
+import { Camera, Upload, Sparkles, Loader2, X, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import { ManualLookupDialog } from "@/components/ManualLookupDialog";
 import heroImg from "@/assets/hero-perfume.jpg";
 
 export const Route = createFileRoute("/")({
@@ -33,6 +34,7 @@ function ScanPage() {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [lookupOpen, setLookupOpen] = useState(false);
 
   useEffect(() => {
     if (!file) {
@@ -95,6 +97,7 @@ function ScanPage() {
           year: p.year ?? null,
           gender: p.gender ?? null,
           description: p.description,
+          plain_description: p.plain_description ?? null,
           top_notes: p.top_notes,
           heart_notes: p.heart_notes,
           base_notes: p.base_notes,
@@ -241,6 +244,14 @@ function ScanPage() {
               <Upload className="mr-2 h-5 w-5" />
               Ladda upp bild
             </Button>
+            <button
+              type="button"
+              onClick={() => setLookupOpen(true)}
+              className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground transition hover:text-foreground"
+            >
+              <Search className="h-3.5 w-3.5" />
+              Eller sök parfym manuellt
+            </button>
           </>
         )}
       </div>
@@ -250,6 +261,8 @@ function ScanPage() {
           Detta kan ta upp till 20 sekunder…
         </p>
       )}
+
+      <ManualLookupDialog open={lookupOpen} onOpenChange={setLookupOpen} />
 
       <section className="mt-10">
         <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-muted-foreground">

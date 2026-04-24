@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LogOut, Settings2, Heart, Camera, Sparkles } from "lucide-react";
+import { LogOut, Settings2, Heart, Camera, Sparkles, Sliders } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -16,18 +16,19 @@ function MePage() {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
-  const [stats, setStats] = useState({ total: 0, favorites: 0 });
+  const [stats, setStats] = useState({ total: 0, likes: 0, wants: 0 });
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: p }, { count: total }, { count: favorites }] = await Promise.all([
+      const [{ data: p }, { count: total }, { count: likes }, { count: wants }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
         supabase.from("scans").select("*", { count: "exact", head: true }).eq("user_id", user.id),
-        supabase.from("scans").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("is_favorite", true),
+        supabase.from("scans").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("reaction", "like"),
+        supabase.from("scans").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("reaction", "want"),
       ]);
       setProfile(p);
-      setStats({ total: total ?? 0, favorites: favorites ?? 0 });
+      setStats({ total: total ?? 0, likes: likes ?? 0, wants: wants ?? 0 });
     })();
   }, [user]);
 
@@ -63,21 +64,26 @@ function MePage() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3">
+      <div className="mt-6 grid grid-cols-3 gap-3">
         <div className="rounded-2xl border border-border/60 bg-card/60 p-4">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Scanningar</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Scannat</p>
           <p className="mt-1 font-display text-3xl">{stats.total}</p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card/60 p-4">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Favoriter</p>
-          <p className="mt-1 font-display text-3xl">{stats.favorites}</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Gillar</p>
+          <p className="mt-1 font-display text-3xl">{stats.likes}</p>
+        </div>
+        <div className="rounded-2xl border border-border/60 bg-card/60 p-4">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Vill ha</p>
+          <p className="mt-1 font-display text-3xl">{stats.wants}</p>
         </div>
       </div>
 
       <div className="mt-6 space-y-2">
         <MenuLink to="/" icon={Camera} label="Ny scanning" />
-        <MenuLink to="/history" icon={Heart} label="Historik & favoriter" />
+        <MenuLink to="/history" icon={Heart} label="Doftgarderob" />
         <MenuLink to="/for-you" icon={Sparkles} label="Personliga förslag" />
+        <MenuLink to="/taste" icon={Sliders} label="Smakprofil" />
         <MenuLink to="/about" icon={Settings2} label="Om ScentSnap" />
       </div>
 

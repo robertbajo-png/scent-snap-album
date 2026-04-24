@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Heart, Star, Trash2, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, Star, Trash2, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -10,8 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { NotePyramid } from "@/components/NotePyramid";
 import { AccordBars } from "@/components/AccordBars";
 import { MeterRow } from "@/components/MeterRow";
+import { ReactionPicker } from "@/components/ReactionPicker";
 import { intensityLabel, formatRelative } from "@/lib/perfume";
-import type { ScanRow } from "@/lib/types";
+import type { Reaction, ScanRow } from "@/lib/types";
 
 export const Route = createFileRoute("/scent/$id")({
   component: ScentDetail,
@@ -45,11 +46,13 @@ function ScentDetail() {
     })();
   }, [id, user, authLoading, navigate]);
 
-  const toggleFav = async () => {
+  const setReaction = async (next: Reaction) => {
     if (!scan) return;
-    const next = !scan.is_favorite;
-    setScan({ ...scan, is_favorite: next });
-    await supabase.from("scans").update({ is_favorite: next }).eq("id", scan.id);
+    setScan({ ...scan, reaction: next, is_favorite: next === "like" || next === "want" });
+    await supabase
+      .from("scans")
+      .update({ reaction: next, is_favorite: next === "like" || next === "want" })
+      .eq("id", scan.id);
   };
 
   const setRating = async (r: number) => {
@@ -93,13 +96,9 @@ function ScentDetail() {
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
-        <button
-          onClick={toggleFav}
-          className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card/60 backdrop-blur"
-          aria-label="Favorit"
-        >
-          <Heart className={"h-4 w-4 " + (scan.is_favorite ? "fill-gold text-gold" : "")} />
-        </button>
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          Säkerhet {Math.round((scan.confidence ?? 0) * 100)}%
+        </span>
       </div>
 
       <div className="relative mt-4 overflow-hidden rounded-3xl border border-border shadow-elegant">
@@ -127,8 +126,20 @@ function ScentDetail() {
       </div>
 
       <p className="mt-3 text-center text-[10px] uppercase tracking-wider text-muted-foreground">
-        Scannad {formatRelative(scan.created_at)} · säkerhet {Math.round((scan.confidence ?? 0) * 100)}%
+        Scannad {formatRelative(scan.created_at)}
       </p>
+
+      {/* Reaction picker */}
+      <section className="mt-5">
+        <ReactionPicker value={scan.reaction ?? null} onChange={setReaction} />
+      </section>
+
+      {scan.plain_description && (
+        <div className="mt-5 rounded-2xl border border-gold/30 bg-gold/5 p-4">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-gold">På vanlig svenska</p>
+          <p className="mt-1.5 text-sm leading-relaxed text-foreground/90">{scan.plain_description}</p>
+        </div>
+      )}
 
       {scan.description && (
         <p className="mt-5 text-foreground/90 leading-relaxed">{scan.description}</p>
