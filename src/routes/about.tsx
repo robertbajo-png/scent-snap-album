@@ -1,41 +1,35 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/about")({
   component: AboutPage,
-  head: () => ({
-    meta: [
-      { title: "Om ScentSnap" },
-      { name: "description", content: "Identifiera parfymer med AI — så här fungerar ScentSnap." },
-    ],
-  }),
 });
 
 function AboutPage() {
+  const t = useT();
   return (
     <AppShell>
       <Logo />
       <article className="mt-8 space-y-6">
         <header>
-          <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-gold">Om</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-gold">{t("about.eyebrow")}</p>
           <h1 className="mt-2 font-display text-4xl leading-tight">
-            Doftens DNA — <span className="italic text-primary">i fickan.</span>
+            {t("about.title_1")}
+            <span className="italic text-primary">{t("about.title_2")}</span>
           </h1>
         </header>
 
-        <p className="text-foreground/90">
-          ScentSnap använder avancerad AI-vision för att identifiera parfymer från bilder av flaskor och
-          etiketter. Du får doftpyramid, ackord, hållbarhet och förslag på liknande parfymer — på sekunder.
-        </p>
+        <p className="text-foreground/90">{t("about.intro")}</p>
 
         <section className="space-y-3">
-          <h2 className="font-display text-xl">Vad du får</h2>
+          <h2 className="font-display text-xl">{t("about.what_you_get")}</h2>
           {[
-            { t: "Komplett doftprofil", s: "Topp-, hjärt- och basnoter." },
-            { t: "Ackord-karta", s: "De olfaktoriska familjerna med intensitet." },
-            { t: "Personliga förslag", s: "AI komponerar parfymer som passar din smak." },
-            { t: "Privat historik", s: "Bara du ser dina scanningar och favoriter." },
+            { t: t("about.f1_t"), s: t("about.f1_s") },
+            { t: t("about.f2_t"), s: t("about.f2_s") },
+            { t: t("about.f3_t"), s: t("about.f3_s") },
+            { t: t("about.f4_t"), s: t("about.f4_s") },
           ].map((f) => (
             <div key={f.t} className="rounded-2xl border border-border/60 bg-card/60 p-4">
               <p className="font-medium">{f.t}</p>
@@ -45,17 +39,15 @@ function AboutPage() {
         </section>
 
         <section className="rounded-2xl bg-gradient-luxe p-5 text-primary-foreground">
-          <p className="text-[10px] uppercase tracking-[0.2em] opacity-70">Tips</p>
-          <p className="mt-1 font-display text-lg">
-            Tydligt ljus och fokus på etiketten ger AI:n bäst förutsättningar.
-          </p>
+          <p className="text-[10px] uppercase tracking-[0.2em] opacity-70">{t("about.tip_label")}</p>
+          <p className="mt-1 font-display text-lg">{t("about.tip")}</p>
         </section>
 
         <Link
           to="/"
           className="inline-flex h-12 items-center rounded-2xl bg-gradient-luxe px-5 text-sm font-medium text-primary-foreground shadow-elegant"
         >
-          Börja scanna
+          {t("about.cta")}
         </Link>
       </article>
     </AppShell>

@@ -5,9 +5,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM = `Du är en parfymexpert (parfymör) inspirerad av Fragrantica.
+const SYSTEM_SV = `Du är en parfymexpert (parfymör) inspirerad av Fragrantica.
 Användaren ger dig ett textsökord (märke, parfymnamn, eller en blandning).
-Identifiera den mest sannolika parfymen och returnera rik metadata på svenska.
+Identifiera den mest sannolika parfymen och returnera rik metadata på SVENSKA.
 
 Regler:
 - top_notes / heart_notes / base_notes: 3-6 specifika noter per lager.
@@ -20,20 +20,36 @@ Regler:
 - confidence: 0-1 (lägre om sökordet är otydligt).
 - Svara ALLTID via verktyget 'return_perfume'.`;
 
+const SYSTEM_EN = `You are a perfume expert inspired by Fragrantica.
+The user provides a text query (brand, perfume name, or a mix).
+Identify the most likely perfume and return rich metadata in ENGLISH.
+
+Rules:
+- top_notes / heart_notes / base_notes: 3-6 specific notes per layer.
+- accords: olfactory families with intensity 0-100.
+- longevity & sillage: 1-5.
+- gender: must be one of these exact tokens: "Herr", "Dam", "Unisex".
+- description: 2-4 sentences, evocative perfumer style.
+- plain_description: 1-2 sentences in plain everyday English.
+- similar_perfumes: 3 suggestions.
+- confidence: 0-1 (lower if the query is unclear).
+- Always respond via the tool 'return_perfume'.`;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { query } = await req.json();
+    const { query, language } = await req.json();
+    const lang: "sv" | "en" = language === "en" ? "en" : "sv";
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
-    if (!query || typeof query !== "string") throw new Error("query krävs");
+    if (!query || typeof query !== "string") throw new Error(lang === "en" ? "query required" : "query krävs");
 
     const tool = {
       type: "function",
       function: {
         name: "return_perfume",
-        description: "Returnera identifierad parfyminformation",
+        description: "Return identified perfume information",
         parameters: {
           type: "object",
           properties: {
@@ -89,6 +105,11 @@ Deno.serve(async (req) => {
       },
     };
 
+    const userMsg =
+      lang === "en"
+        ? `Query: "${query}". Identify the perfume and return metadata via the tool.`
+        : `Sökord: "${query}". Identifiera parfymen och returnera metadata via verktyget.`;
+
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -98,8 +119,8 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-pro",
         messages: [
-          { role: "system", content: SYSTEM },
-          { role: "user", content: `Sökord: "${query}". Identifiera parfymen och returnera metadata via verktyget.` },
+          { role: "system", content: lang === "en" ? SYSTEM_EN : SYSTEM_SV },
+          { role: "user", content: userMsg },
         ],
         tools: [tool],
         tool_choice: { type: "function", function: { name: "return_perfume" } },
@@ -109,25 +130,22 @@ Deno.serve(async (req) => {
     if (!resp.ok) {
       const text = await resp.text();
       console.error("AI gateway error", resp.status, text);
-      if (resp.status === 429) {
-        return new Response(JSON.stringify({ error: "För många förfrågningar, försök igen om en stund." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (resp.status === 402) {
-        return new Response(JSON.stringify({ error: "Krediter slut för Lovable AI." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      return new Response(JSON.stringify({ error: "AI-tjänsten är inte tillgänglig" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      const errMsg =
+        resp.status === 429
+          ? lang === "en" ? "Too many requests, please try again shortly." : "För många förfrågningar, försök igen om en stund."
+          : resp.status === 402
+          ? lang === "en" ? "Lovable AI credits exhausted." : "Krediter slut för Lovable AI."
+          : lang === "en" ? "AI service unavailable" : "AI-tjänsten är inte tillgänglig";
+      return new Response(JSON.stringify({ error: errMsg }), {
+        status: resp.status === 429 || resp.status === 402 ? resp.status : 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const data = await resp.json();
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall) {
-      return new Response(JSON.stringify({ error: "Kunde inte hitta parfymen" }), {
+      return new Response(JSON.stringify({ error: lang === "en" ? "Couldn't find the perfume" : "Kunde inte hitta parfymen" }), {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -138,7 +156,7 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     console.error("lookup-perfume error", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Okänt fel" }), {
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

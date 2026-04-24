@@ -4,6 +4,7 @@ import { Sparkles, RefreshCw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ interface Recommendation {
 
 function ForYouPage() {
   const { user, loading: authLoading } = useAuth();
+  const { t, lang } = useI18n();
   const [recs, setRecs] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
@@ -41,14 +43,14 @@ function ForYouPage() {
       ]);
 
       const { data, error } = await supabase.functions.invoke("for-you", {
-        body: { tasteProfile: taste, recentScans: scans ?? [] },
+        body: { tasteProfile: taste, recentScans: scans ?? [], language: lang },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setRecs(data.recommendations ?? []);
       setHasGenerated(true);
     } catch (e: any) {
-      toast.error(e?.message ?? "Kunde inte generera rekommendationer");
+      toast.error(e?.message ?? t("fy.error"));
     } finally {
       setLoading(false);
     }
@@ -57,22 +59,20 @@ function ForYouPage() {
   useEffect(() => {
     if (user && !hasGenerated && !loading) generate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, lang]);
 
   if (!authLoading && !user) {
     return (
       <AppShell>
         <Logo />
         <div className="mt-20 text-center">
-          <h1 className="font-display text-3xl">Personliga förslag</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Logga in för att få parfymer som matchar din smak.
-          </p>
+          <h1 className="font-display text-3xl">{t("fy.signed_out_title")}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t("fy.signed_out_sub")}</p>
           <Link
             to="/login"
             className="mt-6 inline-flex h-12 items-center rounded-2xl bg-gradient-luxe px-6 text-sm font-medium text-primary-foreground shadow-elegant"
           >
-            Logga in
+            {t("common.login")}
           </Link>
         </div>
       </AppShell>
@@ -84,8 +84,8 @@ function ForYouPage() {
       <Logo />
       <div className="mt-6 flex items-end justify-between">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-gold">Kurerat åt dig</p>
-          <h1 className="mt-1 font-display text-3xl">För dig</h1>
+          <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-gold">{t("fy.eyebrow")}</p>
+          <h1 className="mt-1 font-display text-3xl">{t("fy.title")}</h1>
         </div>
         <Button
           variant="outline"
@@ -95,21 +95,19 @@ function ForYouPage() {
           className="rounded-full border-border"
         >
           <RefreshCw className={"mr-1.5 h-3.5 w-3.5 " + (loading ? "animate-spin" : "")} />
-          Uppdatera
+          {t("common.update")}
         </Button>
       </div>
 
       {loading && recs.length === 0 ? (
         <div className="mt-12 grid place-items-center">
           <Loader2 className="h-8 w-8 animate-spin text-gold" />
-          <p className="mt-3 text-sm text-muted-foreground">Komponerar dina förslag…</p>
+          <p className="mt-3 text-sm text-muted-foreground">{t("fy.composing")}</p>
         </div>
       ) : recs.length === 0 ? (
         <div className="mt-12 text-center">
           <Sparkles className="mx-auto h-10 w-10 text-gold" />
-          <p className="mt-4 text-sm text-muted-foreground">
-            Scanna några parfymer först så får du bättre förslag.
-          </p>
+          <p className="mt-4 text-sm text-muted-foreground">{t("fy.scan_first")}</p>
         </div>
       ) : (
         <div className="mt-6 space-y-4">
@@ -136,7 +134,7 @@ function ForYouPage() {
                   ))}
                 </div>
                 <div className="mt-4 rounded-2xl bg-accent/40 p-3">
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-gold">Varför du</p>
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-gold">{t("fy.why_you")}</p>
                   <p className="mt-1 text-xs text-foreground/90">{r.why}</p>
                 </div>
               </div>

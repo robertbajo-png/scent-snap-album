@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useNavigate } from "@tanstack/react-router";
+import { useI18n } from "@/lib/i18n";
 
 export function ManualLookupDialog({
   open,
@@ -23,6 +24,7 @@ export function ManualLookupDialog({
 }) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t, lang } = useI18n();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -37,7 +39,7 @@ export function ManualLookupDialog({
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("lookup-perfume", {
-        body: { query: q },
+        body: { query: q, language: lang },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -76,7 +78,7 @@ export function ManualLookupDialog({
       navigate({ to: "/scent/$id", params: { id: inserted.id } });
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message ?? "Kunde inte hitta parfymen");
+      toast.error(e?.message ?? t("lookup.not_found"));
     } finally {
       setLoading(false);
     }
@@ -86,10 +88,8 @@ export function ManualLookupDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-3xl">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl">Sök parfym manuellt</DialogTitle>
-          <DialogDescription>
-            Skriv märke och/eller namn — t.ex. "Dior Sauvage" eller "Baccarat Rouge".
-          </DialogDescription>
+          <DialogTitle className="font-display text-2xl">{t("lookup.title")}</DialogTitle>
+          <DialogDescription>{t("lookup.desc")}</DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(e) => {
@@ -104,7 +104,7 @@ export function ManualLookupDialog({
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Märke och namn"
+              placeholder={t("lookup.placeholder")}
               className="h-12 rounded-2xl border-border bg-card/60 pl-11"
               disabled={loading}
             />
@@ -117,10 +117,10 @@ export function ManualLookupDialog({
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Letar upp…
+                {t("lookup.searching")}
               </>
             ) : (
-              "Identifiera"
+              t("lookup.identify")
             )}
           </Button>
         </form>

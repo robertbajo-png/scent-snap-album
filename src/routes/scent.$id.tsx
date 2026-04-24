@@ -4,6 +4,7 @@ import { ArrowLeft, Star, Trash2, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/scent/$id")({
 function ScentDetail() {
   const { id } = Route.useParams();
   const { user, loading: authLoading } = useAuth();
+  const { t, lang } = useI18n();
   const navigate = useNavigate();
   const [scan, setScan] = useState<ScanRow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,7 +38,7 @@ function ScentDetail() {
     (async () => {
       const { data, error } = await supabase.from("scans").select("*").eq("id", id).maybeSingle();
       if (error || !data) {
-        toast.error("Kunde inte hitta scanningen");
+        toast.error(t("scent.not_found"));
         navigate({ to: "/history" });
         return;
       }
@@ -44,6 +46,7 @@ function ScentDetail() {
       setNotes((data as any).user_notes ?? "");
       setLoading(false);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user, authLoading, navigate]);
 
   const setReaction = async (next: Reaction) => {
@@ -66,14 +69,14 @@ function ScentDetail() {
     setSavingNotes(true);
     await supabase.from("scans").update({ user_notes: notes }).eq("id", scan.id);
     setSavingNotes(false);
-    toast.success("Anteckning sparad");
+    toast.success(t("scent.note_saved"));
   };
 
   const remove = async () => {
     if (!scan) return;
-    if (!confirm("Ta bort denna scanning?")) return;
+    if (!confirm(t("scent.delete_confirm"))) return;
     await supabase.from("scans").delete().eq("id", scan.id);
-    toast.success("Borttagen");
+    toast.success(t("scent.deleted"));
     navigate({ to: "/history" });
   };
 
@@ -87,6 +90,8 @@ function ScentDetail() {
     );
   }
 
+  const plainLabel = lang === "en" ? "In plain English" : t("scent.plain_label");
+
   return (
     <AppShell>
       <div className="flex items-center justify-between">
@@ -97,7 +102,7 @@ function ScentDetail() {
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-          Säkerhet {Math.round((scan.confidence ?? 0) * 100)}%
+          {t("scent.confidence", { n: Math.round((scan.confidence ?? 0) * 100) })}
         </span>
       </div>
 
@@ -126,17 +131,16 @@ function ScentDetail() {
       </div>
 
       <p className="mt-3 text-center text-[10px] uppercase tracking-wider text-muted-foreground">
-        Scannad {formatRelative(scan.created_at)}
+        {t("scent.scanned", { when: formatRelative(scan.created_at, lang) })}
       </p>
 
-      {/* Reaction picker */}
       <section className="mt-5">
         <ReactionPicker value={scan.reaction ?? null} onChange={setReaction} />
       </section>
 
       {scan.plain_description && (
         <div className="mt-5 rounded-2xl border border-gold/30 bg-gold/5 p-4">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-gold">På vanlig svenska</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-gold">{plainLabel}</p>
           <p className="mt-1.5 text-sm leading-relaxed text-foreground/90">{scan.plain_description}</p>
         </div>
       )}
@@ -145,12 +149,11 @@ function ScentDetail() {
         <p className="mt-5 text-foreground/90 leading-relaxed">{scan.description}</p>
       )}
 
-      {/* Rating */}
       <section className="mt-6 rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur">
-        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Ditt betyg</p>
+        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{t("scent.your_rating")}</p>
         <div className="mt-2 flex gap-1">
           {[1, 2, 3, 4, 5].map((n) => (
-            <button key={n} onClick={() => setRating(n)} aria-label={`${n} stjärnor`}>
+            <button key={n} onClick={() => setRating(n)} aria-label={t("scent.stars", { n })}>
               <Star
                 className={
                   "h-7 w-7 transition " +
@@ -162,37 +165,33 @@ function ScentDetail() {
         </div>
       </section>
 
-      {/* Note pyramid */}
       <section className="mt-6">
-        <h2 className="font-display text-2xl">Doftpyramid</h2>
+        <h2 className="font-display text-2xl">{t("scent.pyramid")}</h2>
         <div className="mt-3">
           <NotePyramid top={scan.top_notes} heart={scan.heart_notes} base={scan.base_notes} />
         </div>
       </section>
 
-      {/* Meters */}
       <section className="mt-6 space-y-4 rounded-2xl border border-border/60 bg-card/60 p-5 backdrop-blur">
-        <h2 className="font-display text-2xl">Karaktär</h2>
-        <MeterRow label="Hållbarhet" value={scan.longevity ?? 0} hint={intensityLabel(scan.longevity ?? 0)} />
-        <MeterRow label="Sillage" value={scan.sillage ?? 0} hint={intensityLabel(scan.sillage ?? 0)} />
+        <h2 className="font-display text-2xl">{t("scent.character")}</h2>
+        <MeterRow label={t("scent.longevity")} value={scan.longevity ?? 0} hint={intensityLabel(scan.longevity ?? 0, 5, lang)} />
+        <MeterRow label={t("scent.sillage")} value={scan.sillage ?? 0} hint={intensityLabel(scan.sillage ?? 0, 5, lang)} />
       </section>
 
-      {/* Accords */}
       {scan.accords?.length > 0 && (
         <section className="mt-6 rounded-2xl border border-border/60 bg-card/60 p-5 backdrop-blur">
-          <h2 className="font-display text-2xl">Ackord</h2>
+          <h2 className="font-display text-2xl">{t("scent.accords")}</h2>
           <div className="mt-4">
             <AccordBars accords={scan.accords as any} />
           </div>
         </section>
       )}
 
-      {/* Occasions / seasons */}
       {(scan.occasions?.length || scan.seasons?.length) && (
         <section className="mt-6 grid grid-cols-2 gap-3">
           {[
-            { title: "Tillfällen", items: scan.occasions },
-            { title: "Säsonger", items: scan.seasons },
+            { title: t("scent.occasions"), items: scan.occasions },
+            { title: t("scent.seasons"), items: scan.seasons },
           ].map((col) => (
             <div key={col.title} className="rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur">
               <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{col.title}</p>
@@ -208,12 +207,11 @@ function ScentDetail() {
         </section>
       )}
 
-      {/* Similar */}
       {Array.isArray(scan.similar_perfumes) && scan.similar_perfumes.length > 0 && (
         <section className="mt-6">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-gold" />
-            <h2 className="font-display text-2xl">Liknande parfymer</h2>
+            <h2 className="font-display text-2xl">{t("scent.similar")}</h2>
           </div>
           <div className="mt-3 space-y-2">
             {(scan.similar_perfumes as any[]).map((s, i) => (
@@ -227,13 +225,12 @@ function ScentDetail() {
         </section>
       )}
 
-      {/* Notes */}
       <section className="mt-6">
-        <h2 className="font-display text-2xl">Anteckning</h2>
+        <h2 className="font-display text-2xl">{t("scent.note")}</h2>
         <Textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Hur upplevde du doften?"
+          placeholder={t("scent.note_placeholder")}
           className="mt-3 min-h-[100px] rounded-2xl border-border bg-card/60 backdrop-blur"
         />
         <Button
@@ -241,7 +238,7 @@ function ScentDetail() {
           disabled={savingNotes}
           className="mt-3 h-11 w-full rounded-2xl bg-gradient-luxe text-primary-foreground shadow-soft hover:opacity-90"
         >
-          {savingNotes ? "Sparar…" : "Spara anteckning"}
+          {savingNotes ? t("common.saving") : t("scent.note_save")}
         </Button>
       </section>
 
@@ -251,7 +248,7 @@ function ScentDetail() {
         className="mt-6 h-11 w-full rounded-2xl text-destructive hover:bg-destructive/10"
       >
         <Trash2 className="mr-2 h-4 w-4" />
-        Ta bort scanning
+        {t("scent.delete")}
       </Button>
     </AppShell>
   );

@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useT } from "@/lib/i18n";
 import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const { user } = useAuth();
+  const t = useT();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
@@ -41,15 +43,15 @@ function LoginPage() {
           },
         });
         if (error) throw error;
-        toast.success("Konto skapat — du är inloggad!");
+        toast.success(t("login.account_created"));
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success("Välkommen tillbaka");
+        toast.success(t("login.welcome_short"));
       }
       navigate({ to: "/" });
     } catch (e: any) {
-      toast.error(e?.message ?? "Något gick fel");
+      toast.error(e?.message ?? t("common.something_wrong"));
     } finally {
       setBusy(false);
     }
@@ -60,32 +62,32 @@ function LoginPage() {
       <div className="flex items-center justify-between">
         <Logo />
         <Link to="/" className="text-xs uppercase tracking-wider text-muted-foreground hover:text-foreground">
-          Avbryt
+          {t("common.cancel")}
         </Link>
       </div>
 
       <div className="mt-12 text-center">
         <h1 className="font-display text-3xl">
-          {mode === "login" ? "Välkommen åter" : "Skapa konto"}
+          {mode === "login" ? t("login.welcome_back") : t("login.create_account")}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {mode === "login" ? "Logga in för att spara dina scanningar." : "Börja bygga din doftgarderob."}
+          {mode === "login" ? t("login.subtitle_login") : t("login.subtitle_signup")}
         </p>
       </div>
 
       <form onSubmit={submit} className="mt-8 space-y-4">
         {mode === "signup" && (
           <div className="space-y-1.5">
-            <Label htmlFor="dn">Visningsnamn</Label>
-            <Input id="dn" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Hur vill du synas?" />
+            <Label htmlFor="dn">{t("login.display_name")}</Label>
+            <Input id="dn" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder={t("login.display_name_placeholder")} />
           </div>
         )}
         <div className="space-y-1.5">
-          <Label htmlFor="email">E-post</Label>
+          <Label htmlFor="email">{t("login.email")}</Label>
           <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="password">Lösenord</Label>
+          <Label htmlFor="password">{t("login.password")}</Label>
           <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
         <Button
@@ -93,18 +95,18 @@ function LoginPage() {
           disabled={busy}
           className="h-12 w-full rounded-2xl bg-gradient-luxe text-primary-foreground shadow-elegant hover:opacity-90"
         >
-          {busy ? "Vänta…" : mode === "login" ? "Logga in" : "Skapa konto"}
+          {busy ? t("common.wait") : mode === "login" ? t("common.login") : t("common.signup")}
         </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        {mode === "login" ? "Ingen användare?" : "Har du redan konto?"}{" "}
+        {mode === "login" ? t("login.no_account") : t("login.have_account")}{" "}
         <button
           type="button"
           onClick={() => setMode(mode === "login" ? "signup" : "login")}
           className="font-medium text-primary underline-offset-4 hover:underline"
         >
-          {mode === "login" ? "Skapa ett här" : "Logga in"}
+          {mode === "login" ? t("login.create_here") : t("common.login")}
         </button>
       </p>
     </AppShell>

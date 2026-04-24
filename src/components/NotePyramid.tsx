@@ -1,3 +1,5 @@
+import { useT } from "@/lib/i18n";
+
 export function NotePyramid({
   top,
   heart,
@@ -7,10 +9,11 @@ export function NotePyramid({
   heart: string[];
   base: string[];
 }) {
+  const t = useT();
   const layers = [
-    { label: "Topp", notes: top, sub: "Första intrycket — flyktigt" },
-    { label: "Hjärta", notes: heart, sub: "Personligheten — 1–4 h" },
-    { label: "Bas", notes: base, sub: "Grunden — flera timmar" },
+    { label: t("scent.pyr_top"), notes: top, sub: t("scent.pyr_top_sub") },
+    { label: t("scent.pyr_heart"), notes: heart, sub: t("scent.pyr_heart_sub") },
+    { label: t("scent.pyr_base"), notes: base, sub: t("scent.pyr_base_sub") },
   ];
   return (
     <div className="space-y-3">
