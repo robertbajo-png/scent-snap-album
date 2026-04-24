@@ -14,7 +14,8 @@ Rules:
 - Accords are broad olfactory families with intensity 0-100 (e.g. "Träig", "Blommig", "Orientalisk", "Citrus", "Gourmand", "Chypré", "Fougère", "Aquatic", "Mossig", "Pudrig").
 - longevity & sillage: 1-5 (1=svag, 5=mycket stark).
 - gender: "Herr" | "Dam" | "Unisex".
-- Description: 2-4 meningar, evokativ och konkret, på svenska.
+- description: 2-4 meningar, evokativ och konkret, på svenska (poetisk parfymör-stil).
+- plain_description: 1-2 korta meningar på enkel, vardaglig svenska — som om du förklarar för en vän som inte kan parfym. Undvik fackord.
 - similar_perfumes: 3 förslag med {brand, name, why}.
 - confidence: 0-1.
 - Always respond by calling the tool 'return_perfume'.`;
