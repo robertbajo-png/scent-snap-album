@@ -5,15 +5,20 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM = `Du är en parfymexpert. Baserat på användarens smakprofil och scanninghistorik, föreslå 6 parfymer på svenska.
+const SYSTEM_SV = `Du är en parfymexpert. Baserat på användarens smakprofil och scanninghistorik, föreslå 6 parfymer på SVENSKA.
 Varje förslag ska vara verklig och välkänd. Förklara kort varför den passar (1-2 meningar).
 Returnera ALLTID via verktyget 'return_recommendations'.`;
+
+const SYSTEM_EN = `You are a perfume expert. Based on the user's taste profile and scan history, suggest 6 perfumes in ENGLISH.
+Every suggestion must be real and well-known. Briefly explain why it fits (1-2 sentences).
+Always respond via the tool 'return_recommendations'.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { tasteProfile, recentScans } = await req.json();
+    const { tasteProfile, recentScans, language } = await req.json();
+    const lang: "sv" | "en" = language === "en" ? "en" : "sv";
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
 
@@ -21,7 +26,7 @@ Deno.serve(async (req) => {
       type: "function",
       function: {
         name: "return_recommendations",
-        description: "Returnera parfymrekommendationer",
+        description: "Return perfume recommendations",
         parameters: {
           type: "object",
           properties: {
@@ -48,7 +53,11 @@ Deno.serve(async (req) => {
       },
     };
 
-    const userMsg = `Smakprofil: ${JSON.stringify(tasteProfile ?? {})}
+    const userMsg =
+      lang === "en"
+        ? `Taste profile: ${JSON.stringify(tasteProfile ?? {})}
+Recent scans: ${JSON.stringify((recentScans ?? []).slice(0, 10))}`
+        : `Smakprofil: ${JSON.stringify(tasteProfile ?? {})}
 Senaste scanningar: ${JSON.stringify((recentScans ?? []).slice(0, 10))}`;
 
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -60,7 +69,7 @@ Senaste scanningar: ${JSON.stringify((recentScans ?? []).slice(0, 10))}`;
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: SYSTEM },
+          { role: "system", content: lang === "en" ? SYSTEM_EN : SYSTEM_SV },
           { role: "user", content: userMsg },
         ],
         tools: [tool],
@@ -71,18 +80,15 @@ Senaste scanningar: ${JSON.stringify((recentScans ?? []).slice(0, 10))}`;
     if (!resp.ok) {
       const text = await resp.text();
       console.error("AI gateway error", resp.status, text);
-      if (resp.status === 429) {
-        return new Response(JSON.stringify({ error: "För många förfrågningar, försök igen om en stund." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (resp.status === 402) {
-        return new Response(JSON.stringify({ error: "Krediter slut för Lovable AI." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      return new Response(JSON.stringify({ error: "AI-tjänsten är inte tillgänglig" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      const errMsg =
+        resp.status === 429
+          ? lang === "en" ? "Too many requests, please try again shortly." : "För många förfrågningar, försök igen om en stund."
+          : resp.status === 402
+          ? lang === "en" ? "Lovable AI credits exhausted." : "Krediter slut för Lovable AI."
+          : lang === "en" ? "AI service unavailable" : "AI-tjänsten är inte tillgänglig";
+      return new Response(JSON.stringify({ error: errMsg }), {
+        status: resp.status === 429 || resp.status === 402 ? resp.status : 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -100,7 +106,7 @@ Senaste scanningar: ${JSON.stringify((recentScans ?? []).slice(0, 10))}`;
     });
   } catch (e) {
     console.error("for-you error", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Okänt fel" }), {
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
