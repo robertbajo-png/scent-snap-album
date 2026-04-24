@@ -134,6 +134,47 @@ function MePage() {
         </div>
       </div>
 
+      {!quota.loading && (
+        quota.isPremium ? (
+          <section className="mt-6 rounded-2xl border border-gold/40 bg-gradient-luxe/10 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
+                <p className="text-sm font-semibold">Premium aktiv</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={openPortal}
+                disabled={portalLoading}
+                className="rounded-xl"
+              >
+                {portalLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : "Hantera"}
+              </Button>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Obegränsade skanningar, full historik och rekommendationer.
+            </p>
+          </section>
+        ) : (
+          <button
+            onClick={() => setPaywallOpen(true)}
+            className="mt-6 w-full rounded-2xl border border-border/60 bg-card/60 p-4 text-left transition hover:bg-card"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
+                <p className="text-sm font-semibold">Uppgradera till Premium</p>
+              </div>
+              <span className="text-xs font-medium text-gold">Från 49 kr/mån</span>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Du har {quota.remaining} av {FREE_DAILY_LIMIT} gratis-skanningar kvar idag.
+            </p>
+          </button>
+        )
+      )}
+
       <div className="mt-6 space-y-2">
         <MenuLink to="/" icon={Camera} label={t("me.menu_new_scan")} />
         <MenuLink to="/history" icon={Heart} label={t("me.menu_history")} />
