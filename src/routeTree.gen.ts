@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TasteRouteImport } from './routes/taste'
 import { Route as MeRouteImport } from './routes/me'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HistoryRouteImport } from './routes/history'
@@ -17,6 +18,11 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ScentIdRouteImport } from './routes/scent.$id'
 
+const TasteRoute = TasteRouteImport.update({
+  id: '/taste',
+  path: '/taste',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MeRoute = MeRouteImport.update({
   id: '/me',
   path: '/me',
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/history': typeof HistoryRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
+  '/taste': typeof TasteRoute
   '/scent/$id': typeof ScentIdRoute
 }
 export interface FileRoutesByTo {
@@ -69,6 +76,7 @@ export interface FileRoutesByTo {
   '/history': typeof HistoryRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
+  '/taste': typeof TasteRoute
   '/scent/$id': typeof ScentIdRoute
 }
 export interface FileRoutesById {
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/history': typeof HistoryRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
+  '/taste': typeof TasteRoute
   '/scent/$id': typeof ScentIdRoute
 }
 export interface FileRouteTypes {
@@ -90,9 +99,18 @@ export interface FileRouteTypes {
     | '/history'
     | '/login'
     | '/me'
+    | '/taste'
     | '/scent/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/for-you' | '/history' | '/login' | '/me' | '/scent/$id'
+  to:
+    | '/'
+    | '/about'
+    | '/for-you'
+    | '/history'
+    | '/login'
+    | '/me'
+    | '/taste'
+    | '/scent/$id'
   id:
     | '__root__'
     | '/'
@@ -101,6 +119,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/login'
     | '/me'
+    | '/taste'
     | '/scent/$id'
   fileRoutesById: FileRoutesById
 }
@@ -111,11 +130,19 @@ export interface RootRouteChildren {
   HistoryRoute: typeof HistoryRoute
   LoginRoute: typeof LoginRoute
   MeRoute: typeof MeRoute
+  TasteRoute: typeof TasteRoute
   ScentIdRoute: typeof ScentIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/taste': {
+      id: '/taste'
+      path: '/taste'
+      fullPath: '/taste'
+      preLoaderRoute: typeof TasteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/me': {
       id: '/me'
       path: '/me'
@@ -175,6 +202,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistoryRoute: HistoryRoute,
   LoginRoute: LoginRoute,
   MeRoute: MeRoute,
+  TasteRoute: TasteRoute,
   ScentIdRoute: ScentIdRoute,
 }
 export const routeTree = rootRouteImport
