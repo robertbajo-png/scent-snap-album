@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Camera, Upload, Sparkles, Loader2, X, Search } from "lucide-react";
+import { Camera, Upload, Sparkles, Loader2, X, Search, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -9,6 +9,8 @@ import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { ManualLookupDialog } from "@/components/ManualLookupDialog";
+import { PaywallDialog } from "@/components/PaywallDialog";
+import { useQuota, FREE_DAILY_LIMIT } from "@/hooks/useQuota";
 import heroImg from "@/assets/hero-perfume.jpg";
 
 export const Route = createFileRoute("/")({
@@ -37,6 +39,8 @@ function ScanPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [lookupOpen, setLookupOpen] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const quota = useQuota();
 
   useEffect(() => {
     if (!file) {
@@ -63,6 +67,10 @@ function ScanPage() {
     if (!file) return;
     if (!user) {
       navigate({ to: "/login" });
+      return;
+    }
+    if (!quota.canScan) {
+      setPaywallOpen(true);
       return;
     }
     setScanning(true);
@@ -113,6 +121,7 @@ function ScanPage() {
         .single();
       if (insErr) throw insErr;
 
+      quota.refresh();
       navigate({ to: "/scent/$id", params: { id: inserted.id } });
     } catch (e: any) {
       console.error(e);
@@ -149,6 +158,35 @@ function ScanPage() {
           {t("scan.subtitle")}
         </p>
       </section>
+
+      {user && !quota.loading && !quota.isPremium && (
+        <button
+          onClick={() => setPaywallOpen(true)}
+          className="mt-5 flex w-full items-center justify-between rounded-2xl border border-border/60 bg-card/60 px-4 py-3 text-left transition hover:bg-card"
+        >
+          <div className="flex items-center gap-3">
+            <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
+            <div>
+              <p className="text-sm font-medium">
+                {quota.canScan
+                  ? `${quota.remaining} av ${FREE_DAILY_LIMIT} skanningar kvar idag`
+                  : "Du har använt dina gratis-skanningar"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Uppgradera för obegränsad användning
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-medium uppercase tracking-wider text-gold">Premium</span>
+        </button>
+      )}
+
+      {user && quota.isPremium && (
+        <div className="mt-5 flex items-center gap-2 rounded-2xl border border-gold/30 bg-gradient-luxe/10 px-4 py-3">
+          <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
+          <p className="text-sm font-medium">Premium aktiv — obegränsade skanningar</p>
+        </div>
+      )}
 
       <div className="relative mt-6">
         {previewUrl ? (
@@ -263,6 +301,7 @@ function ScanPage() {
       )}
 
       <ManualLookupDialog open={lookupOpen} onOpenChange={setLookupOpen} />
+      <PaywallDialog open={paywallOpen} onOpenChange={setPaywallOpen} reason={!quota.canScan ? `Du har använt dina ${FREE_DAILY_LIMIT} gratis-skanningar för idag.` : undefined} />
 
       <section className="mt-10">
         <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-muted-foreground">
