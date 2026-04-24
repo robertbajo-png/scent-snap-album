@@ -1,16 +1,17 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Camera, Clock, Sparkles, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const items = [
-  { to: "/", icon: Camera, label: "Scan" },
-  { to: "/history", icon: Clock, label: "Historik" },
-  { to: "/for-you", icon: Sparkles, label: "För dig" },
-  { to: "/me", icon: User, label: "Jag" },
-] as const;
+import { useT } from "@/lib/i18n";
 
 export function BottomNav() {
   const { pathname } = useLocation();
+  const t = useT();
+  const items = [
+    { to: "/", icon: Camera, label: t("nav.scan") },
+    { to: "/history", icon: Clock, label: t("nav.history") },
+    { to: "/for-you", icon: Sparkles, label: t("nav.for_you") },
+    { to: "/me", icon: User, label: t("nav.me") },
+  ] as const;
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/85 backdrop-blur-xl">
       <ul className="mx-auto flex max-w-md items-center justify-around px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2">

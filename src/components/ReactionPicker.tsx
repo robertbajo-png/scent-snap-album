@@ -1,12 +1,7 @@
 import { Heart, Sparkle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 import type { Reaction } from "@/lib/types";
-
-const opts: { id: Exclude<Reaction, null>; label: string; Icon: any; activeClass: string }[] = [
-  { id: "like", label: "Gillar", Icon: Heart, activeClass: "bg-rose-500/15 text-rose-500 border-rose-500/40" },
-  { id: "want", label: "Vill ha", Icon: Sparkle, activeClass: "bg-gold/15 text-gold border-gold/50" },
-  { id: "dislike", label: "Ogillar", Icon: X, activeClass: "bg-muted text-muted-foreground border-border" },
-];
 
 export function ReactionPicker({
   value,
@@ -17,6 +12,12 @@ export function ReactionPicker({
   onChange: (next: Reaction) => void;
   size?: "sm" | "md";
 }) {
+  const t = useT();
+  const opts: { id: Exclude<Reaction, null>; label: string; Icon: any; activeClass: string }[] = [
+    { id: "like", label: t("reaction.like"), Icon: Heart, activeClass: "bg-rose-500/15 text-rose-500 border-rose-500/40" },
+    { id: "want", label: t("reaction.want"), Icon: Sparkle, activeClass: "bg-gold/15 text-gold border-gold/50" },
+    { id: "dislike", label: t("reaction.dislike"), Icon: X, activeClass: "bg-muted text-muted-foreground border-border" },
+  ];
   return (
     <div className={cn("grid grid-cols-3 gap-2", size === "sm" && "gap-1.5")}>
       {opts.map(({ id, label, Icon, activeClass }) => {
