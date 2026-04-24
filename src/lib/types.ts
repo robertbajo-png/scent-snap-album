@@ -1,6 +1,8 @@
 export type Accord = { name: string; intensity: number };
 export type SimilarPerfume = { brand: string; name: string; why: string };
 
+export type Reaction = "like" | "want" | "dislike" | null;
+
 export interface PerfumeData {
   brand: string;
   name: string;
@@ -8,6 +10,7 @@ export interface PerfumeData {
   year?: number;
   gender?: string;
   description: string;
+  plain_description?: string;
   top_notes: string[];
   heart_notes: string[];
   base_notes: string[];
@@ -27,6 +30,13 @@ export interface ScanRow extends PerfumeData {
   user_rating: number | null;
   user_notes: string | null;
   is_favorite: boolean;
+  reaction: Reaction;
   created_at: string;
   updated_at: string;
 }
+
+export const REACTION_META: Record<Exclude<Reaction, null>, { label: string; emoji: string; color: string }> = {
+  like: { label: "Gillar", emoji: "♡", color: "text-rose-500" },
+  want: { label: "Vill ha", emoji: "✦", color: "text-gold" },
+  dislike: { label: "Ogillar", emoji: "✕", color: "text-muted-foreground" },
+};
