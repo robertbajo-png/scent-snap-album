@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Heart, Star, Trash2, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, Star, Trash2, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -10,8 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { NotePyramid } from "@/components/NotePyramid";
 import { AccordBars } from "@/components/AccordBars";
 import { MeterRow } from "@/components/MeterRow";
+import { ReactionPicker } from "@/components/ReactionPicker";
 import { intensityLabel, formatRelative } from "@/lib/perfume";
-import type { ScanRow } from "@/lib/types";
+import type { Reaction, ScanRow } from "@/lib/types";
 
 export const Route = createFileRoute("/scent/$id")({
   component: ScentDetail,
@@ -45,11 +46,13 @@ function ScentDetail() {
     })();
   }, [id, user, authLoading, navigate]);
 
-  const toggleFav = async () => {
+  const setReaction = async (next: Reaction) => {
     if (!scan) return;
-    const next = !scan.is_favorite;
-    setScan({ ...scan, is_favorite: next });
-    await supabase.from("scans").update({ is_favorite: next }).eq("id", scan.id);
+    setScan({ ...scan, reaction: next, is_favorite: next === "like" || next === "want" });
+    await supabase
+      .from("scans")
+      .update({ reaction: next, is_favorite: next === "like" || next === "want" })
+      .eq("id", scan.id);
   };
 
   const setRating = async (r: number) => {
