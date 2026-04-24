@@ -51,6 +51,7 @@ Deno.serve(async (req) => {
             year: { type: "number" },
             gender: { type: "string", enum: ["Herr", "Dam", "Unisex"] },
             description: { type: "string" },
+            plain_description: { type: "string" },
             top_notes: { type: "array", items: { type: "string" } },
             heart_notes: { type: "array", items: { type: "string" } },
             base_notes: { type: "array", items: { type: "string" } },
@@ -86,7 +87,7 @@ Deno.serve(async (req) => {
             confidence: { type: "number" },
           },
           required: [
-            "brand", "name", "description",
+            "brand", "name", "description", "plain_description",
             "top_notes", "heart_notes", "base_notes",
             "accords", "longevity", "sillage",
             "occasions", "seasons", "similar_perfumes", "confidence",
