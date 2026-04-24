@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Camera, Upload, Sparkles, Loader2, X, Search } from "lucide-react";
+import { Camera, Upload, Sparkles, Loader2, X, Search, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -9,6 +9,8 @@ import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { ManualLookupDialog } from "@/components/ManualLookupDialog";
+import { PaywallDialog } from "@/components/PaywallDialog";
+import { useQuota, FREE_DAILY_LIMIT } from "@/hooks/useQuota";
 import heroImg from "@/assets/hero-perfume.jpg";
 
 export const Route = createFileRoute("/")({
