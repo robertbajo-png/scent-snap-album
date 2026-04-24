@@ -1,24 +1,24 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth";
+import { I18nProvider, useT } from "@/lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
+  const t = useT();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="font-display text-7xl text-foreground">404</h1>
-        <h2 className="mt-4 font-display text-xl text-foreground">Sidan hittades inte</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Sidan du letar efter finns inte eller har flyttats.
-        </p>
+        <h2 className="mt-4 font-display text-xl text-foreground">{t("nf.title")}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{t("nf.sub")}</p>
         <div className="mt-6">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Till startsidan
+            {t("common.back_home")}
           </Link>
         </div>
       </div>
@@ -74,9 +74,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   return (
-    <AuthProvider>
-      <Outlet />
-      <Toaster position="top-center" />
-    </AuthProvider>
+    <I18nProvider>
+      <AuthProvider>
+        <Outlet />
+        <Toaster position="top-center" />
+      </AuthProvider>
+    </I18nProvider>
   );
 }
