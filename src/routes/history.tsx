@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Heart, Search, Sparkle, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { Input } from "@/components/ui/input";
@@ -16,13 +17,6 @@ export const Route = createFileRoute("/history")({
 
 type FilterId = "all" | Exclude<Reaction, null>;
 
-const filters: { id: FilterId; label: string; Icon?: any }[] = [
-  { id: "all", label: "Alla" },
-  { id: "like", label: "Gillar", Icon: Heart },
-  { id: "want", label: "Vill ha", Icon: Sparkle },
-  { id: "dislike", label: "Ogillar", Icon: X },
-];
-
 function topAccord(s: ScanRow): string | null {
   const arr = Array.isArray(s.accords) ? (s.accords as any[]) : [];
   if (arr.length === 0) return null;
@@ -31,11 +25,19 @@ function topAccord(s: ScanRow): string | null {
 
 function HistoryPage() {
   const { user, loading: authLoading } = useAuth();
+  const { t, lang } = useI18n();
   const [scans, setScans] = useState<ScanRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<FilterId>("all");
   const [accordFilter, setAccordFilter] = useState<string | null>(null);
+
+  const filters: { id: FilterId; label: string; Icon?: any }[] = [
+    { id: "all", label: t("history.filter_all") },
+    { id: "like", label: t("history.filter_like"), Icon: Heart },
+    { id: "want", label: t("history.filter_want"), Icon: Sparkle },
+    { id: "dislike", label: t("history.filter_dislike"), Icon: X },
+  ];
 
   useEffect(() => {
     if (authLoading) return;
@@ -83,15 +85,13 @@ function HistoryPage() {
       <AppShell>
         <Logo />
         <div className="mt-20 text-center">
-          <h1 className="font-display text-3xl">Logga in för historik</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Spara dina scanningar och hitta dem igen senare.
-          </p>
+          <h1 className="font-display text-3xl">{t("history.login_title")}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t("history.login_sub")}</p>
           <Link
             to="/login"
             className="mt-6 inline-flex h-12 items-center rounded-2xl bg-gradient-luxe px-6 text-sm font-medium text-primary-foreground shadow-elegant"
           >
-            Logga in
+            {t("common.login")}
           </Link>
         </div>
       </AppShell>
@@ -102,8 +102,8 @@ function HistoryPage() {
     <AppShell>
       <Logo />
       <div className="mt-6">
-        <h1 className="font-display text-3xl">Din doftgarderob</h1>
-        <p className="text-sm text-muted-foreground">{scans.length} parfymer</p>
+        <h1 className="font-display text-3xl">{t("history.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("history.count", { n: scans.length })}</p>
       </div>
 
       <div className="relative mt-5">
@@ -111,18 +111,18 @@ function HistoryPage() {
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Sök märke eller namn"
+          placeholder={t("history.search_placeholder")}
           className="h-12 rounded-2xl border-border bg-card/60 pl-11 backdrop-blur"
         />
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
-        {filters.map((t) => {
-          const active = filter === t.id;
+        {filters.map((tab) => {
+          const active = filter === tab.id;
           return (
             <button
-              key={t.id}
-              onClick={() => setFilter(t.id)}
+              key={tab.id}
+              onClick={() => setFilter(tab.id)}
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition",
                 active
@@ -130,8 +130,8 @@ function HistoryPage() {
                   : "border border-border bg-card/40 text-muted-foreground hover:text-foreground"
               )}
             >
-              {t.Icon && <t.Icon className="h-3 w-3" />}
-              {t.label}
+              {tab.Icon && <tab.Icon className="h-3 w-3" />}
+              {tab.label}
             </button>
           );
         })}
@@ -148,7 +148,7 @@ function HistoryPage() {
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            Alla doftfamiljer
+            {t("history.all_families")}
           </button>
           {accordOptions.map((a) => (
             <button
@@ -174,7 +174,7 @@ function HistoryPage() {
           ))
         ) : filtered.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-            {scans.length === 0 ? "Inga parfymer än — börja på startsidan." : "Inga träffar."}
+            {scans.length === 0 ? t("history.empty_none") : t("history.empty_filter")}
           </div>
         ) : (
           filtered.map((s) => {
@@ -202,7 +202,7 @@ function HistoryPage() {
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{s.brand}</p>
                   <p className="truncate font-display text-lg leading-tight">{s.name}</p>
                   <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
-                    <span>{formatRelative(s.created_at)}</span>
+                    <span>{formatRelative(s.created_at, lang)}</span>
                     {a && <span>· {a}</span>}
                   </div>
                 </div>

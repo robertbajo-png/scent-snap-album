@@ -4,6 +4,7 @@ import { Camera, Upload, Sparkles, Loader2, X, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ function fileToBase64(file: File): Promise<string> {
 
 function ScanPage() {
   const { user, loading: authLoading } = useAuth();
+  const { t, lang } = useI18n();
   const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -49,7 +51,7 @@ function ScanPage() {
   const handleFile = (f: File | null) => {
     if (!f) return;
     if (f.size > 10 * 1024 * 1024) {
-      toast.error("Bilden är för stor (max 10 MB)");
+      toast.error(t("scan.image_too_large"));
       return;
     }
     setFile(f);
@@ -67,7 +69,6 @@ function ScanPage() {
     try {
       const base64 = await fileToBase64(file);
 
-      // Upload image
       const path = `${user.id}/${Date.now()}-${file.name.replace(/[^a-z0-9.]/gi, "_")}`;
       const { error: upErr } = await supabase.storage
         .from("perfume-images")
@@ -76,16 +77,14 @@ function ScanPage() {
       const { data: urlData } = supabase.storage.from("perfume-images").getPublicUrl(path);
       const imageUrl = urlData.publicUrl;
 
-      // Identify
       const { data, error } = await supabase.functions.invoke("identify-perfume", {
-        body: { imageBase64: base64 },
+        body: { imageBase64: base64, language: lang },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
       const p = data.perfume;
 
-      // Save scan
       const { data: inserted, error: insErr } = await supabase
         .from("scans")
         .insert({
@@ -117,7 +116,7 @@ function ScanPage() {
       navigate({ to: "/scent/$id", params: { id: inserted.id } });
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message ?? "Något gick fel");
+      toast.error(e?.message ?? t("common.something_wrong"));
     } finally {
       setScanning(false);
     }
@@ -132,22 +131,22 @@ function ScanPage() {
             to="/login"
             className="text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
           >
-            Logga in
+            {t("common.login")}
           </Link>
         )}
       </div>
 
       <section className="mt-8 text-center">
         <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-gold">
-          AI-driven parfymigenkänning
+          {t("scan.tag")}
         </p>
         <h1 className="mt-3 font-display text-4xl leading-tight text-foreground">
-          Fånga doften.
+          {t("scan.title_1")}
           <br />
-          <span className="italic text-primary">Avslöja parfymen.</span>
+          <span className="italic text-primary">{t("scan.title_2")}</span>
         </h1>
         <p className="mx-auto mt-3 max-w-xs text-sm text-muted-foreground">
-          Fota flaskan eller etiketten — vi identifierar doftpyramid, ackord och liknande parfymer.
+          {t("scan.subtitle")}
         </p>
       </section>
 
@@ -156,14 +155,14 @@ function ScanPage() {
           <div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-elegant">
             <img
               src={previewUrl}
-              alt="Förhandsvisning av parfym"
+              alt={t("scan.preview_alt")}
               className="aspect-[4/5] w-full object-cover"
             />
             <button
               onClick={reset}
               disabled={scanning}
               className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-background/80 backdrop-blur transition hover:bg-background"
-              aria-label="Ta bort bild"
+              aria-label={t("scan.remove_image")}
             >
               <X className="h-4 w-4" />
             </button>
@@ -172,7 +171,7 @@ function ScanPage() {
           <div className="relative overflow-hidden rounded-3xl border border-border shadow-elegant">
             <img
               src={heroImg}
-              alt="Lyxig parfymflaska"
+              alt={t("scan.hero_alt")}
               width={1536}
               height={1024}
               className="aspect-[4/5] w-full object-cover"
@@ -180,10 +179,10 @@ function ScanPage() {
             <div className="absolute inset-0 bg-gradient-veil" />
             <div className="absolute inset-x-0 bottom-0 p-5">
               <p className="text-xs font-medium uppercase tracking-wider text-gold/90">
-                Redo att scanna
+                {t("scan.hero_caption_eyebrow")}
               </p>
               <p className="mt-1 font-display text-xl text-white">
-                Visa upp en flaska eller etikett
+                {t("scan.hero_caption")}
               </p>
             </div>
           </div>
@@ -201,12 +200,12 @@ function ScanPage() {
             {scanning ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Analyserar parfymen…
+                {t("scan.analyzing")}
               </>
             ) : (
               <>
                 <Sparkles className="mr-2 h-5 w-5" />
-                Identifiera parfym
+                {t("scan.identify")}
               </>
             )}
           </Button>
@@ -233,7 +232,7 @@ function ScanPage() {
               className="h-14 rounded-2xl bg-gradient-luxe text-base font-medium text-primary-foreground shadow-elegant hover:opacity-90"
             >
               <Camera className="mr-2 h-5 w-5" />
-              Öppna kamera
+              {t("scan.open_camera")}
             </Button>
             <Button
               size="lg"
@@ -242,7 +241,7 @@ function ScanPage() {
               className="h-14 rounded-2xl border-border bg-card/50 text-base font-medium backdrop-blur hover:bg-card"
             >
               <Upload className="mr-2 h-5 w-5" />
-              Ladda upp bild
+              {t("scan.upload")}
             </Button>
             <button
               type="button"
@@ -250,7 +249,7 @@ function ScanPage() {
               className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground transition hover:text-foreground"
             >
               <Search className="h-3.5 w-3.5" />
-              Eller sök parfym manuellt
+              {t("scan.manual_lookup")}
             </button>
           </>
         )}
@@ -258,7 +257,7 @@ function ScanPage() {
 
       {scanning && (
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          Detta kan ta upp till 20 sekunder…
+          {t("scan.takes_seconds")}
         </p>
       )}
 
@@ -266,13 +265,13 @@ function ScanPage() {
 
       <section className="mt-10">
         <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-muted-foreground">
-          Så fungerar det
+          {t("scan.how_it_works")}
         </p>
         <ol className="mt-3 space-y-3">
           {[
-            { n: "01", t: "Fota flaskan eller etiketten", s: "Tydligt ljus och fokus ger bäst resultat" },
-            { n: "02", t: "AI:n identifierar parfymen", s: "Märke, doftnoter, ackord och beskrivning" },
-            { n: "03", t: "Spara, betygsätt, hitta liknande", s: "Bygg din personliga doftgarderob" },
+            { n: "01", t: t("scan.step1_title"), s: t("scan.step1_sub") },
+            { n: "02", t: t("scan.step2_title"), s: t("scan.step2_sub") },
+            { n: "03", t: t("scan.step3_title"), s: t("scan.step3_sub") },
           ].map((s) => (
             <li key={s.n} className="flex gap-4 rounded-2xl border border-border/60 bg-card/40 p-4 backdrop-blur">
               <span className="font-display text-2xl text-gold">{s.n}</span>

@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,21 +13,18 @@ export const Route = createFileRoute("/taste")({
   component: TastePage,
 });
 
+// Canonical (Swedish) values stored in DB; UI labels translated.
 const ACCORDS = [
   "Träig", "Blommig", "Citrus", "Orientalisk", "Gourmand",
   "Chypré", "Fougère", "Aquatic", "Pudrig", "Mossig", "Krydda", "Fruktig",
 ];
 
 const SEASONS = ["Vår", "Sommar", "Höst", "Vinter"];
-const INTENSITIES = [
-  { id: "lätt", label: "Lätt & fräsch" },
-  { id: "balanserad", label: "Balanserad" },
-  { id: "stark", label: "Stark & djup" },
-];
 const GENDERS = ["Herr", "Dam", "Unisex"];
 
 function TastePage() {
   const { user, loading: authLoading } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -35,6 +33,15 @@ function TastePage() {
   const [seasons, setSeasons] = useState<string[]>([]);
   const [intensity, setIntensity] = useState<string>("balanserad");
   const [gender, setGender] = useState<string>("Unisex");
+
+  const intensities = useMemo(
+    () => [
+      { id: "lätt", label: t("taste.intensity_light") },
+      { id: "balanserad", label: t("taste.intensity_balanced") },
+      { id: "stark", label: t("taste.intensity_strong") },
+    ],
+    [t]
+  );
 
   useEffect(() => {
     if (authLoading) return;
@@ -76,10 +83,10 @@ function TastePage() {
     });
     setSaving(false);
     if (error) {
-      toast.error("Kunde inte spara");
+      toast.error(t("taste.save_failed"));
       return;
     }
-    toast.success("Smakprofil sparad");
+    toast.success(t("taste.saved"));
     navigate({ to: "/for-you" });
   };
 
@@ -96,28 +103,26 @@ function TastePage() {
   return (
     <AppShell>
       <div className="mt-2">
-        <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-gold">Smakprofil</p>
-        <h1 className="mt-2 font-display text-3xl">Vad gillar du?</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Hjälp oss förstå din doft — vi finslipar förslagen automatiskt baserat på dina reaktioner också.
-        </p>
+        <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-gold">{t("taste.eyebrow")}</p>
+        <h1 className="mt-2 font-display text-3xl">{t("taste.title")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t("taste.sub")}</p>
       </div>
 
-      <Section title="Favoritfamiljer" hint="Välj så många du vill">
-        <Chips items={ACCORDS} selected={favAccords} onToggle={(v) => toggle(favAccords, setFavAccords, v)} variant="like" />
+      <Section title={t("taste.favorites")} hint={t("taste.favorites_hint")}>
+        <Chips items={ACCORDS} translateKey="acc" selected={favAccords} onToggle={(v) => toggle(favAccords, setFavAccords, v)} variant="like" />
       </Section>
 
-      <Section title="Undvik" hint="Familjer du inte gillar">
-        <Chips items={ACCORDS} selected={dislAccords} onToggle={(v) => toggle(dislAccords, setDislAccords, v)} variant="dislike" />
+      <Section title={t("taste.avoid")} hint={t("taste.avoid_hint")}>
+        <Chips items={ACCORDS} translateKey="acc" selected={dislAccords} onToggle={(v) => toggle(dislAccords, setDislAccords, v)} variant="dislike" />
       </Section>
 
-      <Section title="Säsong">
-        <Chips items={SEASONS} selected={seasons} onToggle={(v) => toggle(seasons, setSeasons, v)} variant="like" />
+      <Section title={t("taste.season")}>
+        <Chips items={SEASONS} translateKey="season" selected={seasons} onToggle={(v) => toggle(seasons, setSeasons, v)} variant="like" />
       </Section>
 
-      <Section title="Intensitet">
+      <Section title={t("taste.intensity")}>
         <div className="grid grid-cols-3 gap-2">
-          {INTENSITIES.map((i) => (
+          {intensities.map((i) => (
             <button
               key={i.id}
               onClick={() => setIntensity(i.id)}
@@ -134,7 +139,7 @@ function TastePage() {
         </div>
       </Section>
 
-      <Section title="Inriktning">
+      <Section title={t("taste.direction")}>
         <div className="grid grid-cols-3 gap-2">
           {GENDERS.map((g) => (
             <button
@@ -147,7 +152,7 @@ function TastePage() {
                   : "border-border/60 bg-card/60 text-muted-foreground hover:text-foreground"
               )}
             >
-              {g}
+              {t(`gender.${g}`)}
             </button>
           ))}
         </div>
@@ -158,7 +163,7 @@ function TastePage() {
         disabled={saving}
         className="mt-8 h-14 w-full rounded-2xl bg-gradient-luxe text-base font-medium text-primary-foreground shadow-elegant hover:opacity-90"
       >
-        {saving ? "Sparar…" : "Spara smakprofil"}
+        {saving ? t("common.saving") : t("taste.save")}
       </Button>
     </AppShell>
   );
@@ -178,15 +183,18 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
 
 function Chips({
   items,
+  translateKey,
   selected,
   onToggle,
   variant,
 }: {
   items: string[];
+  translateKey: string;
   selected: string[];
   onToggle: (v: string) => void;
   variant: "like" | "dislike";
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((it) => {
@@ -205,7 +213,7 @@ function Chips({
                 : "border-border/60 bg-card/40 text-muted-foreground hover:text-foreground"
             )}
           >
-            {it}
+            {t(`${translateKey}.${it}`)}
           </button>
         );
       })}

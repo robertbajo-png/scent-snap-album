@@ -1,12 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LogOut, Settings2, Heart, Camera, Sparkles, Sliders } from "lucide-react";
+import { LogOut, Settings2, Heart, Camera, Sparkles, Sliders, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useI18n, type Lang } from "@/lib/i18n";
 import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/me")({
   component: MePage,
@@ -14,6 +16,7 @@ export const Route = createFileRoute("/me")({
 
 function MePage() {
   const { user, loading: authLoading, signOut } = useAuth();
+  const { t, lang, setLang } = useI18n();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [stats, setStats] = useState({ total: 0, likes: 0, wants: 0 });
@@ -32,20 +35,48 @@ function MePage() {
     })();
   }, [user]);
 
+  const langs: { id: Lang; label: string }[] = [
+    { id: "sv", label: t("me.language_sv") },
+    { id: "en", label: t("me.language_en") },
+  ];
+
   if (!authLoading && !user) {
     return (
       <AppShell>
         <Logo />
         <div className="mt-20 text-center">
-          <h1 className="font-display text-3xl">Din doftgarderob</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Logga in för att se din profil.</p>
+          <h1 className="font-display text-3xl">{t("me.signed_out_title")}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t("me.signed_out_sub")}</p>
           <Link
             to="/login"
             className="mt-6 inline-flex h-12 items-center rounded-2xl bg-gradient-luxe px-6 text-sm font-medium text-primary-foreground shadow-elegant"
           >
-            Logga in
+            {t("common.login")}
           </Link>
         </div>
+
+        <section className="mt-10 rounded-2xl border border-border/60 bg-card/60 p-4">
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4 text-gold" strokeWidth={1.7} />
+            <p className="text-sm font-medium">{t("me.language")}</p>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            {langs.map((l) => (
+              <button
+                key={l.id}
+                onClick={() => setLang(l.id)}
+                className={cn(
+                  "rounded-xl border p-2.5 text-sm font-medium transition",
+                  lang === l.id
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border/60 bg-card/60 text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {l.label}
+              </button>
+            ))}
+          </div>
+        </section>
       </AppShell>
     );
   }
@@ -59,45 +90,68 @@ function MePage() {
           {profile?.display_name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "?"}
         </div>
         <div className="min-w-0">
-          <h1 className="truncate font-display text-2xl">{profile?.display_name ?? "Din profil"}</h1>
+          <h1 className="truncate font-display text-2xl">{profile?.display_name ?? t("me.your_profile")}</h1>
           <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
         </div>
       </div>
 
       <div className="mt-6 grid grid-cols-3 gap-3">
         <div className="rounded-2xl border border-border/60 bg-card/60 p-4">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Scannat</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("me.stat_scanned")}</p>
           <p className="mt-1 font-display text-3xl">{stats.total}</p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card/60 p-4">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Gillar</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("me.stat_likes")}</p>
           <p className="mt-1 font-display text-3xl">{stats.likes}</p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card/60 p-4">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Vill ha</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("me.stat_wants")}</p>
           <p className="mt-1 font-display text-3xl">{stats.wants}</p>
         </div>
       </div>
 
       <div className="mt-6 space-y-2">
-        <MenuLink to="/" icon={Camera} label="Ny scanning" />
-        <MenuLink to="/history" icon={Heart} label="Doftgarderob" />
-        <MenuLink to="/for-you" icon={Sparkles} label="Personliga förslag" />
-        <MenuLink to="/taste" icon={Sliders} label="Smakprofil" />
-        <MenuLink to="/about" icon={Settings2} label="Om ScentSnap" />
+        <MenuLink to="/" icon={Camera} label={t("me.menu_new_scan")} />
+        <MenuLink to="/history" icon={Heart} label={t("me.menu_history")} />
+        <MenuLink to="/for-you" icon={Sparkles} label={t("me.menu_for_you")} />
+        <MenuLink to="/taste" icon={Sliders} label={t("me.menu_taste")} />
+        <MenuLink to="/about" icon={Settings2} label={t("me.menu_about")} />
       </div>
+
+      <section className="mt-6 rounded-2xl border border-border/60 bg-card/60 p-4">
+        <div className="flex items-center gap-2">
+          <Globe className="h-4 w-4 text-gold" strokeWidth={1.7} />
+          <p className="text-sm font-medium">{t("me.language")}</p>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {langs.map((l) => (
+            <button
+              key={l.id}
+              onClick={() => setLang(l.id)}
+              className={cn(
+                "rounded-xl border p-2.5 text-sm font-medium transition",
+                lang === l.id
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border/60 bg-card/60 text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
+      </section>
 
       <Button
         variant="outline"
         className="mt-6 h-12 w-full rounded-2xl"
         onClick={async () => {
           await signOut();
-          toast.success("Du är utloggad");
+          toast.success(t("me.signed_out_toast"));
           navigate({ to: "/" });
         }}
       >
         <LogOut className="mr-2 h-4 w-4" />
-        Logga ut
+        {t("common.logout")}
       </Button>
     </AppShell>
   );
