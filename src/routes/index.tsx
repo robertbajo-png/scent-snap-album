@@ -98,6 +98,7 @@ function ScanPage() {
           gender: p.gender ?? null,
           description: p.description,
           plain_description: p.plain_description ?? null,
+          top_notes: p.top_notes,
           heart_notes: p.heart_notes,
           base_notes: p.base_notes,
           accords: p.accords,
