@@ -15,6 +15,7 @@ import { Route as HistoryRouteImport } from './routes/history'
 import { Route as ForYouRouteImport } from './routes/for-you'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ScentIdRouteImport } from './routes/scent.$id'
 
 const MeRoute = MeRouteImport.update({
   id: '/me',
@@ -46,6 +47,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ScentIdRoute = ScentIdRouteImport.update({
+  id: '/scent/$id',
+  path: '/scent/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/history': typeof HistoryRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
+  '/scent/$id': typeof ScentIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/history': typeof HistoryRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
+  '/scent/$id': typeof ScentIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,13 +79,29 @@ export interface FileRoutesById {
   '/history': typeof HistoryRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
+  '/scent/$id': typeof ScentIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/for-you' | '/history' | '/login' | '/me'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/for-you'
+    | '/history'
+    | '/login'
+    | '/me'
+    | '/scent/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/for-you' | '/history' | '/login' | '/me'
-  id: '__root__' | '/' | '/about' | '/for-you' | '/history' | '/login' | '/me'
+  to: '/' | '/about' | '/for-you' | '/history' | '/login' | '/me' | '/scent/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/for-you'
+    | '/history'
+    | '/login'
+    | '/me'
+    | '/scent/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -87,6 +111,7 @@ export interface RootRouteChildren {
   HistoryRoute: typeof HistoryRoute
   LoginRoute: typeof LoginRoute
   MeRoute: typeof MeRoute
+  ScentIdRoute: typeof ScentIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -133,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/scent/$id': {
+      id: '/scent/$id'
+      path: '/scent/$id'
+      fullPath: '/scent/$id'
+      preLoaderRoute: typeof ScentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -143,6 +175,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistoryRoute: HistoryRoute,
   LoginRoute: LoginRoute,
   MeRoute: MeRoute,
+  ScentIdRoute: ScentIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
