@@ -69,6 +69,10 @@ function ScanPage() {
       navigate({ to: "/login" });
       return;
     }
+    if (!quota.canScan) {
+      setPaywallOpen(true);
+      return;
+    }
     setScanning(true);
     try {
       const base64 = await fileToBase64(file);
