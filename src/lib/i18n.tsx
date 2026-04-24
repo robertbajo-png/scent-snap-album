@@ -116,6 +116,12 @@ const sv: Dict = {
   "me.language": "Språk",
   "me.language_sv": "Svenska",
   "me.language_en": "English",
+  "me.premium_active": "Premium aktiv",
+  "me.premium_manage": "Hantera",
+  "me.premium_active_desc": "Obegränsade skanningar, full historik och rekommendationer.",
+  "me.premium_upgrade": "Uppgradera till Premium",
+  "me.premium_from": "Från 49 kr/mån",
+  "me.premium_remaining": "Du har {remaining} av {limit} gratis-skanningar kvar idag.",
 
   // taste
   "taste.eyebrow": "Smakprofil",
