@@ -159,6 +159,35 @@ function ScanPage() {
         </p>
       </section>
 
+      {user && !quota.loading && !quota.isPremium && (
+        <button
+          onClick={() => setPaywallOpen(true)}
+          className="mt-5 flex w-full items-center justify-between rounded-2xl border border-border/60 bg-card/60 px-4 py-3 text-left transition hover:bg-card"
+        >
+          <div className="flex items-center gap-3">
+            <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
+            <div>
+              <p className="text-sm font-medium">
+                {quota.canScan
+                  ? `${quota.remaining} av ${FREE_DAILY_LIMIT} skanningar kvar idag`
+                  : "Du har använt dina gratis-skanningar"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Uppgradera för obegränsad användning
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-medium uppercase tracking-wider text-gold">Premium</span>
+        </button>
+      )}
+
+      {user && quota.isPremium && (
+        <div className="mt-5 flex items-center gap-2 rounded-2xl border border-gold/30 bg-gradient-luxe/10 px-4 py-3">
+          <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
+          <p className="text-sm font-medium">Premium aktiv — obegränsade skanningar</p>
+        </div>
+      )}
+
       <div className="relative mt-6">
         {previewUrl ? (
           <div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-elegant">
