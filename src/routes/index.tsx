@@ -301,6 +301,7 @@ function ScanPage() {
       )}
 
       <ManualLookupDialog open={lookupOpen} onOpenChange={setLookupOpen} />
+      <PaywallDialog open={paywallOpen} onOpenChange={setPaywallOpen} reason={!quota.canScan ? `Du har använt dina ${FREE_DAILY_LIMIT} gratis-skanningar för idag.` : undefined} />
 
       <section className="mt-10">
         <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-muted-foreground">
