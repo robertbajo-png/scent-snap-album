@@ -140,7 +140,7 @@ function MePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
-                <p className="text-sm font-semibold">Premium aktiv</p>
+                <p className="text-sm font-semibold">{t("me.premium_active")}</p>
               </div>
               <Button
                 variant="outline"
@@ -149,11 +149,11 @@ function MePage() {
                 disabled={portalLoading}
                 className="rounded-xl"
               >
-                {portalLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : "Hantera"}
+                {portalLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : t("me.premium_manage")}
               </Button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              Obegränsade skanningar, full historik och rekommendationer.
+              {t("me.premium_active_desc")}
             </p>
           </section>
         ) : (
@@ -164,12 +164,12 @@ function MePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
-                <p className="text-sm font-semibold">Uppgradera till Premium</p>
+                <p className="text-sm font-semibold">{t("me.premium_upgrade")}</p>
               </div>
-              <span className="text-xs font-medium text-gold">Från 49 kr/mån</span>
+              <span className="text-xs font-medium text-gold">{t("me.premium_from")}</span>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              Du har {quota.remaining} av {FREE_DAILY_LIMIT} gratis-skanningar kvar idag.
+              {t("me.premium_remaining", { remaining: quota.remaining, limit: FREE_DAILY_LIMIT })}
             </p>
           </button>
         )
