@@ -121,6 +121,7 @@ function ScanPage() {
         .single();
       if (insErr) throw insErr;
 
+      quota.refresh();
       navigate({ to: "/scent/$id", params: { id: inserted.id } });
     } catch (e: any) {
       console.error(e);
