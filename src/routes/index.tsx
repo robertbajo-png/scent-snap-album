@@ -243,14 +243,15 @@ function ScanPage() {
               <Upload className="mr-2 h-5 w-5" />
               {t("scan.upload")}
             </Button>
-            <button
-              type="button"
+            <Button
+              size="lg"
+              variant="outline"
               onClick={() => setLookupOpen(true)}
-              className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground transition hover:text-foreground"
+              className="h-14 rounded-2xl border-border bg-card/50 text-base font-medium backdrop-blur hover:bg-card"
             >
-              <Search className="h-3.5 w-3.5" />
-              {t("scan.manual_lookup")}
-            </button>
+              <Search className="mr-2 h-5 w-5" />
+              {t("scan.search_by_name")}
+            </Button>
           </>
         )}
       </div>

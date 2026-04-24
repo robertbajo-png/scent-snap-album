@@ -15,6 +15,8 @@ import { useAuth } from "@/lib/auth";
 import { useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 
+type Stage = "idle" | "looking_up" | "fetching_image";
+
 export function ManualLookupDialog({
   open,
   onOpenChange,
@@ -26,7 +28,8 @@ export function ManualLookupDialog({
   const navigate = useNavigate();
   const { t, lang } = useI18n();
   const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [stage, setStage] = useState<Stage>("idle");
+  const loading = stage !== "idle";
 
   const submit = async () => {
     const q = query.trim();
@@ -36,7 +39,7 @@ export function ManualLookupDialog({
       navigate({ to: "/login" });
       return;
     }
-    setLoading(true);
+    setStage("looking_up");
     try {
       const { data, error } = await supabase.functions.invoke("lookup-perfume", {
         body: { query: q, language: lang },
@@ -45,11 +48,24 @@ export function ManualLookupDialog({
       if (data?.error) throw new Error(data.error);
 
       const p = data.perfume;
+
+      // Try to find a bottle image — non-blocking, falls back to null
+      setStage("fetching_image");
+      let imageUrl: string | null = null;
+      try {
+        const { data: imgData } = await supabase.functions.invoke("find-perfume-image", {
+          body: { brand: p.brand, name: p.name },
+        });
+        if (imgData?.imageUrl) imageUrl = imgData.imageUrl as string;
+      } catch (imgErr) {
+        console.warn("image lookup failed", imgErr);
+      }
+
       const { data: inserted, error: insErr } = await supabase
         .from("scans")
         .insert({
           user_id: user.id,
-          image_url: null,
+          image_url: imageUrl,
           brand: p.brand,
           name: p.name,
           perfumer: p.perfumer ?? null,
@@ -80,12 +96,12 @@ export function ManualLookupDialog({
       console.error(e);
       toast.error(e?.message ?? t("lookup.not_found"));
     } finally {
-      setLoading(false);
+      setStage("idle");
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => !loading && onOpenChange(o)}>
       <DialogContent className="rounded-3xl">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">{t("lookup.title")}</DialogTitle>
@@ -109,15 +125,21 @@ export function ManualLookupDialog({
               disabled={loading}
             />
           </div>
+          <p className="px-1 text-xs text-muted-foreground">{t("lookup.hint")}</p>
           <Button
             type="submit"
             disabled={loading || !query.trim()}
             className="h-12 w-full rounded-2xl bg-gradient-luxe text-primary-foreground shadow-soft hover:opacity-90"
           >
-            {loading ? (
+            {stage === "looking_up" ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 {t("lookup.searching")}
+              </>
+            ) : stage === "fetching_image" ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t("lookup.fetching_image")}
               </>
             ) : (
               t("lookup.identify")
