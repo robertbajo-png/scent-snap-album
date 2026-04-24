@@ -23,6 +23,27 @@ function MePage() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [stats, setStats] = useState({ total: 0, likes: 0, wants: 0 });
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const quota = useQuota();
+
+  const openPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-portal-session", {
+        body: {
+          returnUrl: `${window.location.origin}/me`,
+          environment: getStripeEnvironment(),
+        },
+      });
+      if (error || !data?.url) throw new Error(error?.message || data?.error || "Kunde inte öppna portalen");
+      window.open(data.url, "_blank");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Något gick fel");
+    } finally {
+      setPortalLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
