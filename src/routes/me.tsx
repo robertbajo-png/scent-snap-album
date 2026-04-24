@@ -218,6 +218,8 @@ function MePage() {
         <LogOut className="mr-2 h-4 w-4" />
         {t("common.logout")}
       </Button>
+
+      <PaywallDialog open={paywallOpen} onOpenChange={setPaywallOpen} />
     </AppShell>
   );
 }
