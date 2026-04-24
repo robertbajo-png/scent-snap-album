@@ -244,6 +244,14 @@ function ScanPage() {
               <Upload className="mr-2 h-5 w-5" />
               Ladda upp bild
             </Button>
+            <button
+              type="button"
+              onClick={() => setLookupOpen(true)}
+              className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground transition hover:text-foreground"
+            >
+              <Search className="h-3.5 w-3.5" />
+              Eller sök parfym manuellt
+            </button>
           </>
         )}
       </div>
@@ -253,6 +261,8 @@ function ScanPage() {
           Detta kan ta upp till 20 sekunder…
         </p>
       )}
+
+      <ManualLookupDialog open={lookupOpen} onOpenChange={setLookupOpen} />
 
       <section className="mt-10">
         <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-muted-foreground">
