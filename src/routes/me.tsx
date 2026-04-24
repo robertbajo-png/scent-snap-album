@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LogOut, Settings2, Heart, Camera, Sparkles, Sliders, Globe } from "lucide-react";
+import { LogOut, Settings2, Heart, Camera, Sparkles, Sliders, Globe, Crown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -8,6 +8,9 @@ import { useI18n, type Lang } from "@/lib/i18n";
 import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import { PaywallDialog } from "@/components/PaywallDialog";
+import { useQuota, FREE_DAILY_LIMIT } from "@/hooks/useQuota";
+import { getStripeEnvironment } from "@/lib/stripe";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/me")({
