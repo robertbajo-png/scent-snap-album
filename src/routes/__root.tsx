@@ -1,7 +1,9 @@
+import { useEffect } from "react";
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth";
 import { I18nProvider, useT } from "@/lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
+import { initNative } from "@/lib/native";
 
 import appCss from "../styles.css?url";
 
@@ -73,6 +75,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  useEffect(() => {
+    void initNative();
+  }, []);
+
   return (
     <I18nProvider>
       <AuthProvider>
