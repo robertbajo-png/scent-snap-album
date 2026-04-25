@@ -67,9 +67,10 @@ function AdminPage() {
   const refreshPremium = async () => {
     try {
       const res = await listPremium();
-      setPremium(res.users);
+      setPremium(res?.users ?? []);
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to load premium users");
+      setPremium([]);
     }
   };
 
