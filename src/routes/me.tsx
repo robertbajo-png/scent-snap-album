@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LogOut, Settings2, Heart, Camera, Sparkles, Sliders, Globe, Crown, Loader2 } from "lucide-react";
+import { LogOut, Settings2, Heart, Camera, Sparkles, Sliders, Globe, Crown, Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -10,6 +10,7 @@ import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { PaywallDialog } from "@/components/PaywallDialog";
 import { useQuota, FREE_DAILY_LIMIT } from "@/hooks/useQuota";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,7 @@ function MePage() {
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const quota = useQuota();
+  const { isAdmin } = useIsAdmin();
 
   const openPortal = async () => {
     setPortalLoading(true);
@@ -181,6 +183,7 @@ function MePage() {
         <MenuLink to="/for-you" icon={Sparkles} label={t("me.menu_for_you")} />
         <MenuLink to="/taste" icon={Sliders} label={t("me.menu_taste")} />
         <MenuLink to="/about" icon={Settings2} label={t("me.menu_about")} />
+        {isAdmin && <MenuLink to="/admin" icon={Shield} label="Admin" />}
       </div>
 
       <section className="mt-6 rounded-2xl border border-border/60 bg-card/60 p-4">
