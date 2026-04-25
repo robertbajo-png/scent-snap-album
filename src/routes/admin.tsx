@@ -67,9 +67,10 @@ function AdminPage() {
   const refreshPremium = async () => {
     try {
       const res = await listPremium();
-      setPremium(res.users);
+      setPremium(res?.users ?? []);
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to load premium users");
+      setPremium([]);
     }
   };
 
@@ -82,9 +83,10 @@ function AdminPage() {
     setSearching(true);
     try {
       const res = await search({ data: { query: query.trim() } });
-      setResults(res.users);
+      setResults(res?.users ?? []);
     } catch (e: any) {
       toast.error(e?.message ?? "Search failed");
+      setResults([]);
     } finally {
       setSearching(false);
     }
