@@ -1,209 +1,85 @@
 ## Mål
+Lägg till ett admin-roll-system så att utvalda admins kan logga in (vanlig inloggning) och manuellt ge/ta bort Premium åt valfri användare — utan att gå via Stripe.
 
-Lägg till en betalmodell på Scent Snap där:
-- **Gratis**: 3 identifieringar per dygn (foto-skanning + namnsökning räknas tillsammans)
-- **Premium**: Obegränsat antal identifieringar + tillgång till "For You"-rekommendationer
-- **Pris**: 49 kr/månad eller 399 kr/år (sparar ca 32%)
-- Betalningar hanteras av **Lovable Built-in Stripe Payments** (inget eget Stripe-konto behövs, sandbox direkt)
+## Översikt
 
-Krav: Lovable Pro-plan måste vara aktiv för att kunna aktivera betalningar.
+1. **Roller i databasen** (säker pattern, separat tabell):
+   - Enum `app_role` med `admin` och `user`.
+   - Tabell `user_roles (id, user_id, role, created_at)` med RLS.
+   - Security definer-funktion `has_role(_user_id, _role)` för att slippa rekursiva RLS-problem.
+   - RLS på `user_roles`: alla auth-användare kan läsa sin egen rad; bara admins (`has_role(auth.uid(),'admin')`) kan läsa alla / skriva.
 
----
+2. **Premium via "manual grant"** istället för Stripe:
+   - Ny tabell `manual_premium_grants (user_id PK, granted_by, granted_at, expires_at nullable, note)` med RLS (bara admin skriver, användaren själv + admin kan läsa).
+   - Uppdatera `has_active_subscription(user_uuid, check_env)` så den ALSO returnerar `true` om det finns en rad i `manual_premium_grants` för användaren där `expires_at IS NULL OR expires_at > now()`. Detta gör att hela appen (useQuota, gating m.m.) automatiskt respekterar manuellt beviljat Premium utan vidare ändringar.
 
-## Användarflöde
+3. **Första admin**:
+   - Migration som sätter in nuvarande inloggad användare (robert.bajo@gmail.com → user_id `5eb753fd-bfa3-49c7-84bd-dfae46d569ba`, syns i auth-loggarna) som admin. Övriga admins kan sedan utses från admin-UI:t.
 
-```text
-1. Inloggad gratisanvändare öppnar appen
-   → Räknare visas: "2 av 3 sökningar kvar idag" (subtil, under hero)
+4. **Admin-UI** (`/admin`):
+   - Skyddad route. Render-guard: kollar `has_role(user.id, 'admin')` via RPC. Icke-admin → redirect till `/`.
+   - Funktioner:
+     - Sökfält: hitta användare på e-post (server function med `supabaseAdmin`, returnerar `{id, email, is_premium, has_grant, role}`).
+     - Lista nuvarande Premium-användare (manuella grants + aktiva Stripe-prenumerationer).
+     - Knappar per rad: **Grant Premium** (valfritt utgångsdatum), **Revoke Premium** (tar bort grant-raden), **Make admin / Remove admin**.
+   - Alla mutationer går via TanStack `createServerFn` med `requireSupabaseAuth` + servern dubbelkollar `has_role(userId, 'admin')` innan något görs (admin-skydd både i UI och på servern).
 
-2. Användaren skannar/söker → räknaren minskar
+5. **Liten UX-touch i `/me`**:
+   - Om användaren är admin, visa en diskret "Admin"-länk till `/admin` i menyn.
+   - Om Premium kommer från manual grant: visa "Premium (granted)" istället för "Manage subscription"-knappen (Stripe-portalen finns inte).
 
-3. Vid 0 kvar och nytt försök:
-   → Server returnerar 402 + paywall-modal triggas
-   → Modalen visar: "Du har nått dagens gräns" + två planer + "Uppgradera"
-   → Klick → Stripe Checkout (testläge initialt) → tillbaka till appen
-   → Webhook sätter premium → räknaren ersätts med "Premium ∞"
-
-4. Premiumanvändare:
-   → Ingen räknare, obegränsat
-   → "For You"-fliken är tillgänglig
-   → /me visar Premium-badge + "Hantera prenumeration" (Stripe billing portal)
-
-5. Gratisanvändare som klickar "For You":
-   → Mjuk paywall: "For You är en Premium-funktion" + uppgradera-knapp
-```
-
----
-
-## Databasändringar
-
-### Ny tabell `subscriptions`
-Lagrar användarens prenumerationsstatus från Stripe.
-
-```text
-subscriptions
-- user_id (uuid, PK, FK till auth.users)
-- stripe_customer_id (text)
-- stripe_subscription_id (text, nullable)
-- plan (text: 'monthly' | 'yearly' | null)
-- status (text: 'active' | 'trialing' | 'canceled' | 'past_due' | null)
-- current_period_end (timestamptz, nullable)
-- updated_at (timestamptz)
-```
-
-RLS:
-- SELECT: egen rad (`auth.uid() = user_id`)
-- INSERT/UPDATE: endast service role (via webhook)
-
-### Ny SQL-funktion `get_daily_scan_count(user_id)`
-Räknar antal scans skapade av användaren idag (i UTC). Används av server för kvotcheck. SECURITY DEFINER så den fungerar oavsett RLS.
-
-### Ingen ändring i `scans`-tabellen
-Vi räknar via `created_at >= today` direkt. Sparar oss en kolumn.
-
----
-
-## Server-side – kvotvakt (NYTT)
-
-Skapa **TanStack server function** `checkScanQuota` (i `src/lib/quota.functions.ts`):
-- Använder `requireSupabaseAuth`-middleware
-- Kollar `subscriptions` → om `status='active'` och `current_period_end > now()` → returnera `{ allowed: true, remaining: Infinity, premium: true }`
-- Annars räkna scans idag → returnera `{ allowed: count < 3, remaining: 3 - count, premium: false }`
-
-Anropas:
-1. **Innan** `identify-perfume` (i `src/routes/index.tsx` `scan()`)
-2. **Innan** `lookup-perfume` (i `ManualLookupDialog.tsx` `submit()`)
-3. **Efter mount** för att visa räknaren på startsidan
-
-Om `allowed: false` → öppna `<PaywallDialog />` istället för att fortsätta.
-
-> Anmärkning: Klient-sidans check är UX. Den **riktiga** spärren är server-side i kvotfunktionen — användaren kan inte kringgå genom att manipulera klienten eftersom AI-anropen sker via samma serverfunktioner.
-
----
-
-## Stripe-integration
-
-### Aktivering
-1. Kör `payments--enable_stripe_payments` (skapar testmiljö direkt)
-2. Skapa två produkter via `batch_create_product`:
-   - **Premium Monthly** – 49 SEK/månad, recurring
-   - **Premium Yearly** – 399 SEK/år, recurring
-3. Skattehantering: **Tax calculation only** (option 2) — Stripe räknar och samlar in svensk moms, vi hanterar deklaration själva (enklast i v1, kan uppgraderas till full compliance senare)
-
-### Server routes som behövs
-- `src/routes/api/checkout.ts` – Skapar Stripe Checkout Session, returnerar URL
-- `src/routes/api/portal.ts` – Skapar Stripe Billing Portal-session (för "Hantera prenumeration")
-- `src/routes/api/public/stripe-webhook.ts` – Tar emot Stripe-events:
-  - `checkout.session.completed` → upsert till `subscriptions` (status=active)
-  - `customer.subscription.updated` → uppdatera status + period_end
-  - `customer.subscription.deleted` → status=canceled
-  - Verifierar webhook-signatur med `STRIPE_WEBHOOK_SECRET`
-
----
-
-## UI-ändringar
-
-### `src/routes/index.tsx`
-- Lägg till räknarchip ovanför hero-bilden:
-  ```text
-  [ ✨ 2 av 3 dagliga sökningar kvar ]    (gratis)
-  [ ✨ Premium · obegränsat ]              (premium, gold)
-  ```
-- Före `scan()` och i `ManualLookupDialog`: kalla `checkScanQuota` först
-- Om `!allowed` → visa `<PaywallDialog />` istället
-
-### Ny komponent `src/components/PaywallDialog.tsx`
-- Vacker dialog matchande appens stil (gold gradient, rundade hörn)
-- Två plankort: Monthly (49 kr) / Yearly (399 kr, "Spara 32%")
-- "Uppgradera"-knapp → kallar `/api/checkout` med valt plan-id → redirectar till Stripe
-- Stänger automatiskt om användaren redan är premium
-
-### `src/components/ScanQuotaBadge.tsx` (NYTT)
-Liten chip-komponent som visar kvarvarande sökningar eller "Premium ∞". Används på startsidan och eventuellt i header.
-
-### `src/routes/me.tsx`
-- Lägg till sektion "Prenumeration" mellan stats och språkväljaren:
-  - Gratis: "Free plan · 3 sökningar/dag" + "Uppgradera till Premium"-knapp
-  - Premium: Gold-badge "✨ Premium" + plan + förnyas-datum + "Hantera prenumeration"-knapp (öppnar Stripe portal)
-
-### `src/routes/for-you.tsx`
-- Om inte premium → visa låst version med blur-overlay + "Lås upp For You med Premium"-knapp som öppnar `<PaywallDialog />`
-
-### `src/lib/i18n.tsx`
-Nya nycklar (sv + en):
-- `paywall.title`, `paywall.subtitle`, `paywall.daily_limit_reached`
-- `paywall.monthly`, `paywall.yearly`, `paywall.save_percent`
-- `paywall.upgrade_cta`, `paywall.unlimited_scans`, `paywall.for_you_unlocked`
-- `quota.remaining` ("{n} av 3 sökningar kvar idag"), `quota.premium_unlimited`
-- `me.subscription`, `me.manage_subscription`, `me.upgrade_to_premium`, `me.premium_active`, `me.renews`
-- `for_you.locked_title`, `for_you.locked_sub`
-
----
-
-## Filer som skapas/ändras
+## Filer att skapa/ändra
 
 **Nya filer:**
-- `src/lib/quota.functions.ts` – server function `checkScanQuota` + hook `useScanQuota`
-- `src/components/PaywallDialog.tsx`
-- `src/components/ScanQuotaBadge.tsx`
-- `src/routes/api/checkout.ts` – Stripe checkout endpoint
-- `src/routes/api/portal.ts` – Stripe billing portal endpoint
-- `src/routes/api/public/stripe-webhook.ts` – Stripe webhook handler
+- `supabase/migrations/<ts>_admin_roles.sql` — enum, `user_roles`, `manual_premium_grants`, RLS, `has_role`, uppdaterad `has_active_subscription`, seed första admin.
+- `src/routes/admin.tsx` — admin-sida (skyddad).
+- `src/lib/admin.functions.ts` — server functions: `searchUsers`, `grantPremium`, `revokePremium`, `setAdminRole`, `listPremiumUsers`.
+- `src/hooks/useIsAdmin.ts` — liten hook som kollar admin-status.
 
 **Ändrade filer:**
-- `src/routes/index.tsx` – kvotcheck före skanning + badge
-- `src/components/ManualLookupDialog.tsx` – kvotcheck före lookup
-- `src/routes/me.tsx` – prenumerationssektion
-- `src/routes/for-you.tsx` – premium-lock
-- `src/lib/i18n.tsx` – nya översättningar
+- `src/routes/me.tsx` — admin-länk + anpassad text när Premium kommer från grant.
+- `src/lib/i18n.tsx` — nya strängar (sv/en) för admin-sidan.
 
-**Migrations:**
-- Skapa `subscriptions`-tabell med RLS
-- Skapa `get_daily_scan_count`-funktion
+## Tekniska detaljer
 
----
+```sql
+create type public.app_role as enum ('admin','user');
 
-## Implementationsordning (3 etapper)
+create table public.user_roles (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null,
+  role app_role not null,
+  created_at timestamptz not null default now(),
+  unique (user_id, role)
+);
+alter table public.user_roles enable row level security;
 
-**Etapp 1 – Aktivera Stripe & skapa produkter**
-1. Kör `payments--enable_stripe_payments`
-2. Skapa Monthly + Yearly-produkter
-3. Verifiera att `STRIPE_SECRET_KEY` och `STRIPE_WEBHOOK_SECRET` finns
+create or replace function public.has_role(_user_id uuid, _role app_role)
+returns boolean language sql stable security definer set search_path=public as $$
+  select exists(select 1 from public.user_roles where user_id=_user_id and role=_role)
+$$;
 
-**Etapp 2 – Backend (databas + kvot + Stripe-routes)**
-4. Migration: `subscriptions`-tabell + `get_daily_scan_count`
-5. Skapa `quota.functions.ts`
-6. Skapa de tre Stripe server routes (checkout, portal, webhook)
-7. Testa webhook med Stripe CLI / sandbox-event
+create table public.manual_premium_grants (
+  user_id uuid primary key,
+  granted_by uuid not null,
+  granted_at timestamptz not null default now(),
+  expires_at timestamptz,
+  note text
+);
+alter table public.manual_premium_grants enable row level security;
+-- policies: select own OR admin; insert/update/delete admin only
 
-**Etapp 3 – Frontend (paywall + badge + UI)**
-8. Skapa `PaywallDialog` och `ScanQuotaBadge`
-9. Koppla in kvotcheck i `index.tsx` och `ManualLookupDialog.tsx`
-10. Uppdatera `/me` med prenumerationssektion
-11. Lås `/for-you` bakom premium
-12. Lägg till alla i18n-nycklar
+-- update has_active_subscription to OR-in manual grant
+```
 
----
+Server-side admin-check (i varje server function):
+```ts
+const { data: isAdmin } = await supabase.rpc('has_role', { _user_id: userId, _role: 'admin' });
+if (!isAdmin) throw new Error('Forbidden');
+```
 
-## Edge-case-hantering
-
-- **Kvoten räknar bara lyckade sökningar?** Nej — vi räknar `scans`-rader. Om AI-anropet misslyckas blir det ingen rad → ingen kvotförbrukning. Snäll mot användaren.
-- **Användare i annan tidszon?** "Idag" definieras i UTC i v1 (enklast). Kan flyttas till användarens tidszon senare om det blir feedback.
-- **Premium upphör mitt i månaden?** Webhook hanterar `subscription.deleted` → status=canceled. Användaren får dock ha kvar premium tills `current_period_end`.
-- **Avbryter prenumeration?** Stripe Billing Portal hanterar allt. Vi får webhook när det händer.
-
----
-
-## Vad som INTE ingår (för framtiden)
-
-- Trial-period (kan läggas till genom Stripe trial-config)
-- Familjekonton / delade prenumerationer
-- Kampanjkoder
-- Statistik/export som premiumförmån (kan läggas till senare på begäran)
-- Gå live med riktiga betalningar — sandbox först, sedan claim Stripe-konto i Lovables UI när du är redo
-
----
-
-## Resultat
-
-Användaren får 3 gratis identifieringar per dag, ser tydligt hur många som finns kvar, och möts av en snygg paywall vid 4:e försöket. Uppgradering sker sömlöst via Stripe Checkout, premium aktiveras automatiskt via webhook, och för-betalda användare får obegränsade sökningar plus AI-rekommendationer i "For You". Allt hanteras av Lovables inbyggda Stripe-integration utan att du behöver eget Stripe-konto för att börja testa.
+## Säkerhet
+- Roller ALDRIG på `profiles`-tabellen.
+- All admin-logik dubbelvalideras serverside med `has_role` — UI-guard räcker inte.
+- `manual_premium_grants` RLS: bara admin kan skriva; användaren själv kan läsa sin egen rad (för transparens).
+- Inga klientnycklar exponerade — `supabaseAdmin` används bara i server functions för att slå upp e-postadresser i `auth.users`.
