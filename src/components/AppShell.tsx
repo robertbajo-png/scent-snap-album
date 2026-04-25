@@ -3,7 +3,10 @@ import { BottomNav } from "./BottomNav";
 
 export function AppShell({ children, hideNav = false }: { children: ReactNode; hideNav?: boolean }) {
   return (
-    <div className="relative min-h-screen bg-background pb-24">
+    <div
+      className="relative min-h-screen bg-background pb-24"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
       <div
         aria-hidden
         className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[60vh] opacity-60"
