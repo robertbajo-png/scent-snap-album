@@ -75,6 +75,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  useEffect(() => {
+    void initNative();
+  }, []);
+
   return (
     <I18nProvider>
       <AuthProvider>
