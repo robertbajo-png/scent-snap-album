@@ -9,7 +9,10 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "cap:prepare": "mkdir -p dist/client && [ -f dist/client/index.html ] || echo '<!doctype html><html><body>Capacitor placeholder. The Android app loads https://scent-snap-album.lovable.app via server.url.</body></html>' > dist/client/index.html",
+    "cap:sync": "bun run cap:prepare && bunx cap sync android",
+    "cap:open": "bun run cap:sync && bunx cap open android"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.1",

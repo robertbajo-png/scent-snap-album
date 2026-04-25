@@ -1,85 +1,84 @@
-## Mål
-Lägg till ett admin-roll-system så att utvalda admins kan logga in (vanlig inloggning) och manuellt ge/ta bort Premium åt valfri användare — utan att gå via Stripe.
+# Plan: Android-release via Capacitor (server URL-läge)
 
-## Översikt
+Mål: få ScentSnap körbar i Android Studio idag, redo för Play Store inom 2 veckor, utan att riva upp SSR-arkitekturen.
 
-1. **Roller i databasen** (säker pattern, separat tabell):
-   - Enum `app_role` med `admin` och `user`.
-   - Tabell `user_roles (id, user_id, role, created_at)` med RLS.
-   - Security definer-funktion `has_role(_user_id, _role)` för att slippa rekursiva RLS-problem.
-   - RLS på `user_roles`: alla auth-användare kan läsa sin egen rad; bara admins (`has_role(auth.uid(),'admin')`) kan läsa alla / skriva.
+## Strategi
 
-2. **Premium via "manual grant"** istället för Stripe:
-   - Ny tabell `manual_premium_grants (user_id PK, granted_by, granted_at, expires_at nullable, note)` med RLS (bara admin skriver, användaren själv + admin kan läsa).
-   - Uppdatera `has_active_subscription(user_uuid, check_env)` så den ALSO returnerar `true` om det finns en rad i `manual_premium_grants` för användaren där `expires_at IS NULL OR expires_at > now()`. Detta gör att hela appen (useQuota, gating m.m.) automatiskt respekterar manuellt beviljat Premium utan vidare ändringar.
+Capacitor-appen laddar `https://scent-snap-album.lovable.app` direkt i WebView istället för en bundlad statisk `index.html`. Det löser blockeraren `dist/client/index.html saknas` (filen genereras aldrig — appen är SSR på Cloudflare Worker, inte SPA). En kodbas, samma backend, native skal runt om.
 
-3. **Första admin**:
-   - Migration som sätter in nuvarande inloggad användare (robert.bajo@gmail.com → user_id `5eb753fd-bfa3-49c7-84bd-dfae46d569ba`, syns i auth-loggarna) som admin. Övriga admins kan sedan utses från admin-UI:t.
+För Play Store-policy lägger vi till native värde via Google Play Billing i fas 2 så det inte är "bara en webview-wrapper".
 
-4. **Admin-UI** (`/admin`):
-   - Skyddad route. Render-guard: kollar `has_role(user.id, 'admin')` via RPC. Icke-admin → redirect till `/`.
-   - Funktioner:
-     - Sökfält: hitta användare på e-post (server function med `supabaseAdmin`, returnerar `{id, email, is_premium, has_grant, role}`).
-     - Lista nuvarande Premium-användare (manuella grants + aktiva Stripe-prenumerationer).
-     - Knappar per rad: **Grant Premium** (valfritt utgångsdatum), **Revoke Premium** (tar bort grant-raden), **Make admin / Remove admin**.
-   - Alla mutationer går via TanStack `createServerFn` med `requireSupabaseAuth` + servern dubbelkollar `has_role(userId, 'admin')` innan något görs (admin-skydd både i UI och på servern).
+## Fas 1 — Android körbar (idag)
 
-5. **Liten UX-touch i `/me`**:
-   - Om användaren är admin, visa en diskret "Admin"-länk till `/admin` i menyn.
-   - Om Premium kommer från manual grant: visa "Premium (granted)" istället för "Manage subscription"-knappen (Stripe-portalen finns inte).
+### 1. Uppdatera `capacitor.config.ts`
+- Lägg till `server.url = "https://scent-snap-album.lovable.app"`
+- Lägg till `server.androidScheme = "https"` (krävs för att cookies/Supabase-auth ska funka)
+- Behåll `webDir: "dist/client"` som fallback (Capacitor kräver att fältet finns men använder det inte när `server.url` är satt)
+- Behåll splash screen och status bar-config
 
-## Filer att skapa/ändra
+### 2. Lägg till en byggsteg-platshållare
+Skapa tom `dist/client/index.html` via ett npm-script så `cap sync` inte klagar — den används aldrig i runtime eftersom `server.url` tar över.
 
-**Nya filer:**
-- `supabase/migrations/<ts>_admin_roles.sql` — enum, `user_roles`, `manual_premium_grants`, RLS, `has_role`, uppdaterad `has_active_subscription`, seed första admin.
-- `src/routes/admin.tsx` — admin-sida (skyddad).
-- `src/lib/admin.functions.ts` — server functions: `searchUsers`, `grantPremium`, `revokePremium`, `setAdminRole`, `listPremiumUsers`.
-- `src/hooks/useIsAdmin.ts` — liten hook som kollar admin-status.
+### 3. Uppdatera `docs/android.md`
+- Nytt build-flöde: `bunx cap sync android` (ingen `bun run build` krävs längre för Android-bundeln)
+- Förklara att appen laddar live från `scent-snap-album.lovable.app`
+- Notera att uppdateringar av webbappen syns direkt i Android utan ny Play Store-release (utom när native plugins ändras)
 
-**Ändrade filer:**
-- `src/routes/me.tsx` — admin-länk + anpassad text när Premium kommer från grant.
-- `src/lib/i18n.tsx` — nya strängar (sv/en) för admin-sidan.
+### 4. Snabbtest
+Du kör `bunx cap sync android && bunx cap open android` på din Windows-maskin → Run i emulator → ska visa inloggningsskärmen från live-sajten.
+
+## Fas 2 — Google Play Billing (vecka 2)
+
+Görs i en separat tur när Fas 1 funkar i emulator. Översikt:
+
+### 4. Lägg till Capacitor Play Billing-plugin
+- `@capgo/capacitor-purchases` eller `cordova-plugin-purchase` (vi väljer i den turen baserat på Capacitor 8-kompatibilitet)
+- Skapa premium-produkt i Google Play Console (`scentsnap_premium_monthly`)
+
+### 5. Ny edge function `verify-play-purchase`
+- Tar emot purchase token från Android-appen
+- Verifierar mot Google Play Developer API
+- Skriver till samma `subscriptions`-tabell som Stripe-flödet redan använder
+- Kräver Google service account-nyckel som secret
+
+### 6. UI-gren i `PaywallDialog`
+- `Capacitor.isNativePlatform()` → visa "Köp via Google Play"-knapp som triggar Play Billing
+- Annars (web) → behåll Stripe-knappen
+- Gemensam `subscriptions`-tabell betyder att premium-status syns på båda plattformarna
 
 ## Tekniska detaljer
 
-```sql
-create type public.app_role as enum ('admin','user');
+**Filer som ändras i Fas 1:**
+- `capacitor.config.ts` — server.url + androidScheme
+- `docs/android.md` — uppdaterat build-flöde
+- `package.json` — lägg till `cap:sync` script som skapar tom `dist/client/index.html` + kör `cap sync android`
 
-create table public.user_roles (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null,
-  role app_role not null,
-  created_at timestamptz not null default now(),
-  unique (user_id, role)
-);
-alter table public.user_roles enable row level security;
+**Inga ändringar i:**
+- TanStack Start-appen (alla routes, server functions, middleware)
+- Edge functions
+- Databasen
+- Stripe-flödet (fortsätter funka för web)
 
-create or replace function public.has_role(_user_id uuid, _role app_role)
-returns boolean language sql stable security definer set search_path=public as $$
-  select exists(select 1 from public.user_roles where user_id=_user_id and role=_role)
-$$;
-
-create table public.manual_premium_grants (
-  user_id uuid primary key,
-  granted_by uuid not null,
-  granted_at timestamptz not null default now(),
-  expires_at timestamptz,
-  note text
-);
-alter table public.manual_premium_grants enable row level security;
--- policies: select own OR admin; insert/update/delete admin only
-
--- update has_active_subscription to OR-in manual grant
-```
-
-Server-side admin-check (i varje server function):
+**Capacitor server.url-konfiguration:**
 ```ts
-const { data: isAdmin } = await supabase.rpc('has_role', { _user_id: userId, _role: 'admin' });
-if (!isAdmin) throw new Error('Forbidden');
+server: {
+  url: "https://scent-snap-album.lovable.app",
+  androidScheme: "https",
+  cleartext: false,
+}
 ```
 
-## Säkerhet
-- Roller ALDRIG på `profiles`-tabellen.
-- All admin-logik dubbelvalideras serverside med `has_role` — UI-guard räcker inte.
-- `manual_premium_grants` RLS: bara admin kan skriva; användaren själv kan läsa sin egen rad (för transparens).
-- Inga klientnycklar exponerade — `supabaseAdmin` används bara i server functions för att slå upp e-postadresser i `auth.users`.
+**Risker & mitigations:**
+- *Auth-cookies*: löses med `androidScheme: "https"` så WebView delar origin korrekt med live-sajten
+- *Offline*: appen kräver internet — visar standardfel om frånkopplad (acceptabelt eftersom alla features kräver backend ändå)
+- *Play Store-policy*: Google kräver native värde — täcks av Play Billing i Fas 2 + redan implementerade native plugins (status bar, splash, hardware back, app lifecycle)
+- *Lovable-deployer*: när du publicerar ny webbversion uppdateras Android-appen automatiskt nästa gång användaren öppnar den. Native-ändringar (plugins, ikoner) kräver dock ny `.aab` i Play Console.
+
+## Vad du gör efter att jag implementerat Fas 1
+
+1. `git pull`
+2. `bun install`
+3. `bun run cap:sync` (det nya scriptet)
+4. `bunx cap open android`
+5. Tryck Run ▶ i Android Studio → välj emulator eller ansluten telefon
+6. Säg till mig när det funkar, så kör vi Fas 2
