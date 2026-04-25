@@ -3,10 +3,18 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "app.lovable.scentsnap",
   appName: "ScentSnap",
-  // Built static assets live here after `bun run build`.
+  // Required field, but unused at runtime when `server.url` is set.
+  // We still need a placeholder file so `cap sync` doesn't error.
   webDir: "dist/client",
+  server: {
+    // The Android app loads the live site directly inside the WebView.
+    // This avoids having to bundle a static SPA build (the app is SSR on
+    // Cloudflare Workers and never produces a single index.html).
+    url: "https://scent-snap-album.lovable.app",
+    androidScheme: "https",
+    cleartext: false,
+  },
   android: {
-    // Allow http for local dev only; production assets are bundled.
     allowMixedContent: false,
   },
   plugins: {
