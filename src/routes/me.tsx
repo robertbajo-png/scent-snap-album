@@ -174,7 +174,7 @@ function MePage() {
               <p className="text-sm font-semibold">Premium kommer snart</p>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              {t("me.premium_remaining", { remaining: quota.remaining, limit: FREE_DAILY_LIMIT })}
+              {t("me.premium_remaining", { remaining: quota.remaining, limit: quota.dailyLimit })}
               {" "}— köp via Google Play läggs till inom kort. Under tiden kan du
               uppgradera på webben med samma konto.
             </p>
@@ -192,7 +192,7 @@ function MePage() {
               <span className="text-xs font-medium text-gold">{t("me.premium_from")}</span>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              {t("me.premium_remaining", { remaining: quota.remaining, limit: FREE_DAILY_LIMIT })}
+              {t("me.premium_remaining", { remaining: quota.remaining, limit: quota.dailyLimit })}
             </p>
           </button>
         )
