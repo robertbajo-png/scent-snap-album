@@ -10,6 +10,7 @@ import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { ManualLookupDialog } from "@/components/ManualLookupDialog";
 import { PaywallDialog } from "@/components/PaywallDialog";
+import { AndroidPremiumBanner } from "@/components/AndroidPremiumBanner";
 import { useQuota, FREE_DAILY_LIMIT } from "@/hooks/useQuota";
 import { isNativePlatform } from "@/lib/native";
 import heroImg from "@/assets/hero-perfume.jpg";
