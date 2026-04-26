@@ -9,6 +9,7 @@ import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { PaywallDialog } from "@/components/PaywallDialog";
+import { AndroidPremiumBanner } from "@/components/AndroidPremiumBanner";
 import { useQuota, FREE_DAILY_LIMIT } from "@/hooks/useQuota";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { getStripeEnvironment } from "@/lib/stripe";
