@@ -10,6 +10,7 @@
  * the dynamic imports never resolve to the platform-specific code paths.
  */
 import { Capacitor } from "@capacitor/core";
+import { useEffect, useState } from "react";
 
 /**
  * SSR-safe check for whether we are running inside the Capacitor native shell
@@ -44,6 +45,21 @@ export function isNativePlatform(): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * SSR/hydration-safe React hook for the native check. Always returns `false`
+ * on the first render (matching the SSR HTML), then re-renders with the real
+ * value after mount. Use this in components — calling `isNativePlatform()`
+ * directly during render causes a hydration mismatch (React error #418)
+ * because the server renders `false` and the client may render `true`.
+ */
+export function useIsNative(): boolean {
+  const [native, setNative] = useState(false);
+  useEffect(() => {
+    setNative(isNativePlatform());
+  }, []);
+  return native;
 }
 
 let initialized = false;
