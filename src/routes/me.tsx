@@ -12,6 +12,7 @@ import { PaywallDialog } from "@/components/PaywallDialog";
 import { useQuota, FREE_DAILY_LIMIT } from "@/hooks/useQuota";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { getStripeEnvironment } from "@/lib/stripe";
+import { isNativePlatform } from "@/lib/native";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/me")({
@@ -28,6 +29,7 @@ function MePage() {
   const [portalLoading, setPortalLoading] = useState(false);
   const quota = useQuota();
   const { isAdmin } = useIsAdmin();
+  const native = isNativePlatform();
 
   const openPortal = async () => {
     setPortalLoading(true);
@@ -158,6 +160,18 @@ function MePage() {
               {t("me.premium_active_desc")}
             </p>
           </section>
+        ) : native ? (
+          <div className="mt-6 rounded-2xl border border-border/60 bg-card/60 p-4">
+            <div className="flex items-center gap-2">
+              <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
+              <p className="text-sm font-semibold">Premium kommer snart</p>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {t("me.premium_remaining", { remaining: quota.remaining, limit: FREE_DAILY_LIMIT })}
+              {" "}— köp via Google Play läggs till inom kort. Under tiden kan du
+              uppgradera på webben med samma konto.
+            </p>
+          </div>
         ) : (
           <button
             onClick={() => setPaywallOpen(true)}
