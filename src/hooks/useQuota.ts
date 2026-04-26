@@ -2,8 +2,19 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { useAuth } from "@/lib/auth";
+import { isNativePlatform } from "@/lib/native";
 
-export const FREE_DAILY_LIMIT = 3;
+export const FREE_DAILY_LIMIT_WEB = 3;
+export const FREE_DAILY_LIMIT_NATIVE = 5;
+
+/**
+ * Daily free-scan limit. On Android (Capacitor) we give users 5/day instead
+ * of 3, since Google Play Billing isn't wired up yet — they can't upgrade
+ * from inside the app, so a slightly higher limit avoids dead-ends.
+ */
+export const FREE_DAILY_LIMIT = isNativePlatform()
+  ? FREE_DAILY_LIMIT_NATIVE
+  : FREE_DAILY_LIMIT_WEB;
 
 export interface QuotaState {
   loading: boolean;
