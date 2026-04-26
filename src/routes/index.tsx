@@ -72,7 +72,11 @@ function ScanPage() {
       return;
     }
     if (!quota.canScan) {
-      setPaywallOpen(true);
+      if (native) {
+        toast.error("Du har använt dina gratis-skanningar för idag. Försök igen imorgon.");
+      } else {
+        setPaywallOpen(true);
+      }
       return;
     }
     setScanning(true);
