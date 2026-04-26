@@ -114,6 +114,8 @@ function MePage() {
     <AppShell>
       <Logo />
 
+      <AndroidPremiumBanner />
+
       <div className="mt-8 flex items-center gap-4">
         <div className="grid h-16 w-16 place-items-center rounded-full bg-gradient-luxe text-2xl font-display text-primary-foreground shadow-elegant">
           {profile?.display_name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "?"}
