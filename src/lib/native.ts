@@ -19,7 +19,28 @@ import { Capacitor } from "@capacitor/core";
 export function isNativePlatform(): boolean {
   if (typeof window === "undefined") return false;
   try {
-    return Capacitor.isNativePlatform();
+    if (Capacitor.isNativePlatform()) return true;
+  } catch {
+    // ignore — fall through to dev override check
+  }
+
+  // Dev override: allow forcing the native UI in a regular browser by
+  // visiting the app with `?native=1` once. The flag is persisted to
+  // localStorage so subsequent navigations (which TanStack Router may
+  // strip from the query string) keep the override active.
+  // Use `?native=0` to clear the override.
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const flag = params.get("native");
+    if (flag === "1") {
+      window.localStorage.setItem("force-native", "1");
+      return true;
+    }
+    if (flag === "0") {
+      window.localStorage.removeItem("force-native");
+      return false;
+    }
+    return window.localStorage.getItem("force-native") === "1";
   } catch {
     return false;
   }
