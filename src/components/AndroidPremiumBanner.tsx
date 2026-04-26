@@ -1,5 +1,5 @@
 import { Sparkles } from "lucide-react";
-import { isNativePlatform } from "@/lib/native";
+import { useIsNative } from "@/lib/native";
 
 /**
  * Banner shown on Android (Capacitor) only, while Google Play Billing
@@ -9,7 +9,8 @@ import { isNativePlatform } from "@/lib/native";
  * Renders nothing on web.
  */
 export function AndroidPremiumBanner() {
-  if (!isNativePlatform()) return null;
+  const native = useIsNative();
+  if (!native) return null;
 
   return (
     <div className="mb-3 flex items-start gap-3 rounded-2xl border border-gold/30 bg-gradient-luxe/10 px-4 py-3">
