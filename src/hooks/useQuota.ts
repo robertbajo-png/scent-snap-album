@@ -19,6 +19,12 @@ export const FREE_DAILY_LIMIT = isNativePlatform()
 export interface QuotaState {
   loading: boolean;
   isPremium: boolean;
+  /**
+   * True only when premium comes from a real Stripe subscription (so the
+   * Stripe customer portal can be opened). False for admin-granted /
+   * manual premium, where there is nothing for Stripe to manage.
+   */
+  hasStripeSubscription: boolean;
   scansToday: number;
   remaining: number;
   canScan: boolean;
@@ -29,23 +35,33 @@ export function useQuota(): QuotaState {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
+  const [hasStripeSubscription, setHasStripeSubscription] = useState(false);
   const [scansToday, setScansToday] = useState(0);
 
   const load = async () => {
     if (!user) {
       setLoading(false);
       setIsPremium(false);
+      setHasStripeSubscription(false);
       setScansToday(0);
       return;
     }
     setLoading(true);
     try {
       const env = getStripeEnvironment();
-      const [subRes, countRes] = await Promise.all([
+      const [subRes, countRes, stripeSubRes] = await Promise.all([
         supabase.rpc("has_active_subscription", { user_uuid: user.id, check_env: env }),
         supabase.rpc("get_daily_scan_count", { user_uuid: user.id }),
+        // Check if there's an actual Stripe subscription row (not just a manual grant).
+        supabase
+          .from("subscriptions")
+          .select("id", { head: true, count: "exact" })
+          .eq("user_id", user.id)
+          .eq("environment", env)
+          .in("status", ["active", "trialing", "canceled"]),
       ]);
       setIsPremium(Boolean(subRes.data));
+      setHasStripeSubscription((stripeSubRes.count ?? 0) > 0);
       setScansToday(Number(countRes.data ?? 0));
     } catch (e) {
       console.error("useQuota error", e);
@@ -79,5 +95,5 @@ export function useQuota(): QuotaState {
   const remaining = isPremium ? Infinity : Math.max(0, FREE_DAILY_LIMIT - scansToday);
   const canScan = isPremium || scansToday < FREE_DAILY_LIMIT;
 
-  return { loading, isPremium, scansToday, remaining, canScan, refresh: load };
+  return { loading, isPremium, hasStripeSubscription, scansToday, remaining, canScan, refresh: load };
 }
