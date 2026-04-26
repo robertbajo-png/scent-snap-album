@@ -2,19 +2,17 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { useAuth } from "@/lib/auth";
-import { isNativePlatform } from "@/lib/native";
+import { useIsNative } from "@/lib/native";
 
 export const FREE_DAILY_LIMIT_WEB = 3;
 export const FREE_DAILY_LIMIT_NATIVE = 5;
 
 /**
- * Daily free-scan limit. On Android (Capacitor) we give users 5/day instead
- * of 3, since Google Play Billing isn't wired up yet — they can't upgrade
- * from inside the app, so a slightly higher limit avoids dead-ends.
+ * Backwards-compatible default limit (web). For the actual platform-aware
+ * limit at render time, read `quota.dailyLimit` from `useQuota()` instead —
+ * that value is hydration-safe.
  */
-export const FREE_DAILY_LIMIT = isNativePlatform()
-  ? FREE_DAILY_LIMIT_NATIVE
-  : FREE_DAILY_LIMIT_WEB;
+export const FREE_DAILY_LIMIT = FREE_DAILY_LIMIT_WEB;
 
 export interface QuotaState {
   loading: boolean;
@@ -27,12 +25,16 @@ export interface QuotaState {
   hasStripeSubscription: boolean;
   scansToday: number;
   remaining: number;
+  /** Daily free-scan limit for the current platform (5 on Android, 3 on web). */
+  dailyLimit: number;
   canScan: boolean;
   refresh: () => Promise<void>;
 }
 
 export function useQuota(): QuotaState {
   const { user } = useAuth();
+  const native = useIsNative();
+  const dailyLimit = native ? FREE_DAILY_LIMIT_NATIVE : FREE_DAILY_LIMIT_WEB;
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
   const [hasStripeSubscription, setHasStripeSubscription] = useState(false);
@@ -92,8 +94,8 @@ export function useQuota(): QuotaState {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  const remaining = isPremium ? Infinity : Math.max(0, FREE_DAILY_LIMIT - scansToday);
-  const canScan = isPremium || scansToday < FREE_DAILY_LIMIT;
+  const remaining = isPremium ? Infinity : Math.max(0, dailyLimit - scansToday);
+  const canScan = isPremium || scansToday < dailyLimit;
 
-  return { loading, isPremium, hasStripeSubscription, scansToday, remaining, canScan, refresh: load };
+  return { loading, isPremium, hasStripeSubscription, scansToday, remaining, dailyLimit, canScan, refresh: load };
 }

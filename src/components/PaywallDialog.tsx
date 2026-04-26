@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useAuth } from "@/lib/auth";
-import { isNativePlatform } from "@/lib/native";
+import { useIsNative } from "@/lib/native";
 import { useNavigate } from "@tanstack/react-router";
 
 interface PaywallDialogProps {
@@ -74,7 +74,7 @@ export function PaywallDialog({ open, onOpenChange, reason }: PaywallDialogProps
   // On Android (Play Store) Stripe is not allowed for digital subscriptions —
   // Google Play Billing must be used. Until that's wired up we render a
   // simple "coming soon" notice instead of the Stripe checkout.
-  const native = isNativePlatform();
+  const native = useIsNative();
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
