@@ -152,6 +152,8 @@ function ScanPage() {
         )}
       </div>
 
+      <AndroidPremiumBanner />
+
       <section className="mt-8 text-center">
         <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-gold">
           {t("scan.tag")}
