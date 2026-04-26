@@ -149,18 +149,22 @@ function MePage() {
                 <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
                 <p className="text-sm font-semibold">{t("me.premium_active")}</p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={openPortal}
-                disabled={portalLoading}
-                className="rounded-xl"
-              >
-                {portalLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : t("me.premium_manage")}
-              </Button>
+              {quota.hasStripeSubscription && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={openPortal}
+                  disabled={portalLoading}
+                  className="rounded-xl"
+                >
+                  {portalLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : t("me.premium_manage")}
+                </Button>
+              )}
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              {t("me.premium_active_desc")}
+              {quota.hasStripeSubscription
+                ? t("me.premium_active_desc")
+                : "Premium tilldelad manuellt — inget att hantera här."}
             </p>
           </section>
         ) : native ? (
