@@ -178,7 +178,7 @@ function ScanPage() {
             <div>
               <p className="text-sm font-medium">
                 {quota.canScan
-                  ? `${quota.remaining} av ${FREE_DAILY_LIMIT} skanningar kvar idag`
+                  ? `${quota.remaining} av ${quota.dailyLimit} skanningar kvar idag`
                   : "Du har använt dina gratis-skanningar"}
               </p>
               <p className="text-xs text-muted-foreground">
@@ -195,7 +195,7 @@ function ScanPage() {
           <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
           <p className="text-sm font-medium">
             {quota.canScan
-              ? `${quota.remaining} av ${FREE_DAILY_LIMIT} skanningar kvar idag`
+              ? `${quota.remaining} av ${quota.dailyLimit} skanningar kvar idag`
               : "Du har använt dina gratis-skanningar för idag"}
           </p>
         </div>
@@ -321,7 +321,7 @@ function ScanPage() {
       )}
 
       <ManualLookupDialog open={lookupOpen} onOpenChange={setLookupOpen} />
-      <PaywallDialog open={paywallOpen} onOpenChange={setPaywallOpen} reason={!quota.canScan ? `Du har använt dina ${FREE_DAILY_LIMIT} gratis-skanningar för idag.` : undefined} />
+      <PaywallDialog open={paywallOpen} onOpenChange={setPaywallOpen} reason={!quota.canScan ? `Du har använt dina ${quota.dailyLimit} gratis-skanningar för idag.` : undefined} />
 
       <section className="mt-10">
         <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-muted-foreground">
