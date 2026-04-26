@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ManualLookupDialog } from "@/components/ManualLookupDialog";
 import { PaywallDialog } from "@/components/PaywallDialog";
 import { useQuota, FREE_DAILY_LIMIT } from "@/hooks/useQuota";
+import { isNativePlatform } from "@/lib/native";
 import heroImg from "@/assets/hero-perfume.jpg";
 
 export const Route = createFileRoute("/")({
@@ -41,6 +42,7 @@ function ScanPage() {
   const [lookupOpen, setLookupOpen] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const quota = useQuota();
+  const native = isNativePlatform();
 
   useEffect(() => {
     if (!file) {
@@ -70,7 +72,11 @@ function ScanPage() {
       return;
     }
     if (!quota.canScan) {
-      setPaywallOpen(true);
+      if (native) {
+        toast.error("Du har använt dina gratis-skanningar för idag. Försök igen imorgon.");
+      } else {
+        setPaywallOpen(true);
+      }
       return;
     }
     setScanning(true);
@@ -159,7 +165,7 @@ function ScanPage() {
         </p>
       </section>
 
-      {user && !quota.loading && !quota.isPremium && (
+      {user && !quota.loading && !quota.isPremium && !native && (
         <button
           onClick={() => setPaywallOpen(true)}
           className="mt-5 flex w-full items-center justify-between rounded-2xl border border-border/60 bg-card/60 px-4 py-3 text-left transition hover:bg-card"
@@ -179,6 +185,17 @@ function ScanPage() {
           </div>
           <span className="text-xs font-medium uppercase tracking-wider text-gold">Premium</span>
         </button>
+      )}
+
+      {user && !quota.loading && !quota.isPremium && native && (
+        <div className="mt-5 flex items-center gap-3 rounded-2xl border border-border/60 bg-card/60 px-4 py-3">
+          <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
+          <p className="text-sm font-medium">
+            {quota.canScan
+              ? `${quota.remaining} av ${FREE_DAILY_LIMIT} skanningar kvar idag`
+              : "Du har använt dina gratis-skanningar för idag"}
+          </p>
+        </div>
       )}
 
       {user && quota.isPremium && (

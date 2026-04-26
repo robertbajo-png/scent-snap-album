@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useAuth } from "@/lib/auth";
+import { isNativePlatform } from "@/lib/native";
 import { useNavigate } from "@tanstack/react-router";
 
 interface PaywallDialogProps {
@@ -70,10 +71,39 @@ export function PaywallDialog({ open, onOpenChange, reason }: PaywallDialogProps
     onOpenChange(next);
   };
 
+  // On Android (Play Store) Stripe is not allowed for digital subscriptions —
+  // Google Play Billing must be used. Until that's wired up we render a
+  // simple "coming soon" notice instead of the Stripe checkout.
+  const native = isNativePlatform();
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-md p-0 overflow-hidden">
-        {showCheckout ? (
+        {native ? (
+          <div className="p-6 text-center">
+            <DialogHeader>
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-gradient-luxe text-primary-foreground">
+                <Sparkles className="h-6 w-6" />
+              </div>
+              <DialogTitle className="text-center font-display text-2xl mt-3">
+                Premium kommer snart till Android
+              </DialogTitle>
+              <DialogDescription className="text-center">
+                Vi förbereder köp via Google Play. Under tiden kan du
+                uppgradera på webben med samma konto — premium aktiveras
+                automatiskt här i appen.
+              </DialogDescription>
+            </DialogHeader>
+            <Button
+              size="lg"
+              onClick={() => onOpenChange(false)}
+              className="mt-6 h-12 w-full rounded-2xl"
+              variant="outline"
+            >
+              OK
+            </Button>
+          </div>
+        ) : showCheckout ? (
           <div className="max-h-[85vh] overflow-y-auto">
             <PaymentTestModeBanner />
             <div className="p-4">

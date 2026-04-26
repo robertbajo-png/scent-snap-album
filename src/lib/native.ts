@@ -11,6 +11,20 @@
  */
 import { Capacitor } from "@capacitor/core";
 
+/**
+ * SSR-safe check for whether we are running inside the Capacitor native shell
+ * (Android/iOS app), as opposed to a regular browser. Returns false during
+ * SSR and on the web.
+ */
+export function isNativePlatform(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return Capacitor.isNativePlatform();
+  } catch {
+    return false;
+  }
+}
+
 let initialized = false;
 
 export async function initNative(): Promise<void> {
