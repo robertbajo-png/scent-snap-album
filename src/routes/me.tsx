@@ -164,7 +164,7 @@ function MePage() {
             <p className="mt-2 text-xs text-muted-foreground">
               {quota.hasStripeSubscription
                 ? t("me.premium_active_desc")
-                : "Premium tilldelad manuellt — inget att hantera här."}
+                : t("me.premium_manual_desc")}
             </p>
           </section>
         ) : native ? (
