@@ -11,8 +11,8 @@ import { Button } from "@/components/ui/button";
 import { ManualLookupDialog } from "@/components/ManualLookupDialog";
 import { PaywallDialog } from "@/components/PaywallDialog";
 import { AndroidPremiumBanner } from "@/components/AndroidPremiumBanner";
-import { useQuota, FREE_DAILY_LIMIT } from "@/hooks/useQuota";
-import { isNativePlatform } from "@/lib/native";
+import { useQuota } from "@/hooks/useQuota";
+import { useIsNative } from "@/lib/native";
 import heroImg from "@/assets/hero-perfume.jpg";
 
 export const Route = createFileRoute("/")({
@@ -43,7 +43,7 @@ function ScanPage() {
   const [lookupOpen, setLookupOpen] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const quota = useQuota();
-  const native = isNativePlatform();
+  const native = useIsNative();
 
   useEffect(() => {
     if (!file) {
