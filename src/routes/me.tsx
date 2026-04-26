@@ -9,6 +9,7 @@ import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { PaywallDialog } from "@/components/PaywallDialog";
+import { AndroidPremiumBanner } from "@/components/AndroidPremiumBanner";
 import { useQuota, FREE_DAILY_LIMIT } from "@/hooks/useQuota";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { getStripeEnvironment } from "@/lib/stripe";
@@ -112,6 +113,8 @@ function MePage() {
   return (
     <AppShell>
       <Logo />
+
+      <AndroidPremiumBanner />
 
       <div className="mt-8 flex items-center gap-4">
         <div className="grid h-16 w-16 place-items-center rounded-full bg-gradient-luxe text-2xl font-display text-primary-foreground shadow-elegant">
