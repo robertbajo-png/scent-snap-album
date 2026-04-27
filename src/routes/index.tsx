@@ -195,8 +195,8 @@ function ScanPage() {
           <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
           <p className="text-sm font-medium">
             {quota.canScan
-              ? `${quota.remaining} av ${quota.dailyLimit} skanningar kvar idag`
-              : "Du har använt dina gratis-skanningar för idag"}
+              ? t("home.scans_remaining", { remaining: quota.remaining, limit: quota.dailyLimit })
+              : t("home.scans_used_today")}
           </p>
         </div>
       )}
