@@ -63,12 +63,30 @@ Deno.serve(async (req) => {
       },
     };
 
+    const scans = Array.isArray(recentScans) ? recentScans : [];
+    const liked = scans.filter((s: any) => s?.reaction === "like").slice(0, 10);
+    const wanted = scans.filter((s: any) => s?.reaction === "want").slice(0, 10);
+    const disliked = scans.filter((s: any) => s?.reaction === "dislike").slice(0, 10);
+    const owned = scans.filter((s: any) => s?.owned === true).slice(0, 20);
+    const favorites = scans.filter((s: any) => s?.is_favorite === true || (typeof s?.user_rating === "number" && s.user_rating >= 4)).slice(0, 10);
+    const other = scans.filter((s: any) => !s?.reaction && !s?.owned && !s?.is_favorite).slice(0, 10);
+
     const userMsg =
       lang === "en"
         ? `Taste profile: ${JSON.stringify(tasteProfile ?? {})}
-Recent scans: ${JSON.stringify((recentScans ?? []).slice(0, 10))}`
+Liked perfumes: ${JSON.stringify(liked)}
+Wanted perfumes: ${JSON.stringify(wanted)}
+Owned perfumes (do NOT recommend these): ${JSON.stringify(owned)}
+Favorites / high-rated: ${JSON.stringify(favorites)}
+Disliked perfumes (avoid similar): ${JSON.stringify(disliked)}
+Other recent scans: ${JSON.stringify(other)}`
         : `Smakprofil: ${JSON.stringify(tasteProfile ?? {})}
-Senaste scanningar: ${JSON.stringify((recentScans ?? []).slice(0, 10))}`;
+Gillade parfymer: ${JSON.stringify(liked)}
+Vill ha-parfymer: ${JSON.stringify(wanted)}
+Ägda parfymer (rekommendera INTE dessa): ${JSON.stringify(owned)}
+Favoriter / högt betygsatta: ${JSON.stringify(favorites)}
+Ogillade parfymer (undvik liknande): ${JSON.stringify(disliked)}
+Andra senaste scanningar: ${JSON.stringify(other)}`;
 
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
