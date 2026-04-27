@@ -42,6 +42,38 @@ function MePage() {
   const quota = useQuota();
   const { isAdmin } = useIsAdmin();
   const native = useIsNative();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const confirmWord = t("account.delete_confirm_word");
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm.trim().toUpperCase() !== confirmWord) return;
+    setDeleteLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-account", {
+        body: {},
+      });
+      if (error || data?.error) {
+        const code = data?.error;
+        if (code === "active_subscription") {
+          toast.error(t("account.delete_blocked_sub"));
+        } else {
+          toast.error(data?.message || error?.message || t("account.delete_failed"));
+        }
+        setDeleteLoading(false);
+        return;
+      }
+      toast.success(t("account.delete_success"));
+      await signOut();
+      setDeleteOpen(false);
+      navigate({ to: "/" });
+    } catch (e: any) {
+      toast.error(e?.message ?? t("account.delete_failed"));
+      setDeleteLoading(false);
+    }
+  };
 
   const openPortal = async () => {
     setPortalLoading(true);
