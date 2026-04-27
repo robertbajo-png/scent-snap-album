@@ -10,7 +10,7 @@ Givet en bild på en parfymflaska, etikett eller förpackning, identifiera parfy
 
 Regler:
 - Om du inte kan läsa flaskan tydligt, gör en kvalificerad gissning baserat på visuell stil och justera confidence.
-- Noter (top/heart/base) ska vara specifika (t.ex. "Bergamott", "Iris", "Sandelträ", "Ambroxan"). 3-6 per lager.
+- Noter (top/heart/base) ska vara specifika och varierade (t.ex. "Bergamott", "Iris", "Sandelträ", "Ambroxan"). 5-10 per lager — våga ta med både dominerande och mer subtila noter.
 - Accords är breda olfaktoriska familjer med intensity 0-100 (t.ex. "Träig", "Blommig", "Orientalisk", "Citrus", "Gourmand", "Chypré", "Fougère", "Aquatic", "Mossig", "Pudrig").
 - longevity & sillage: 1-5.
 - gender: "Herr" | "Dam" | "Unisex".
