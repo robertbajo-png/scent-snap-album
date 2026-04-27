@@ -69,6 +69,7 @@ export type Database = {
         Row: {
           accords: Json | null
           base_notes: string[] | null
+          bottle_size: string | null
           brand: string | null
           confidence: number | null
           created_at: string
@@ -81,6 +82,7 @@ export type Database = {
           longevity: number | null
           name: string | null
           occasions: string[] | null
+          owned: boolean
           perfumer: string | null
           plain_description: string | null
           raw_ai: Json | null
@@ -98,6 +100,7 @@ export type Database = {
         Insert: {
           accords?: Json | null
           base_notes?: string[] | null
+          bottle_size?: string | null
           brand?: string | null
           confidence?: number | null
           created_at?: string
@@ -110,6 +113,7 @@ export type Database = {
           longevity?: number | null
           name?: string | null
           occasions?: string[] | null
+          owned?: boolean
           perfumer?: string | null
           plain_description?: string | null
           raw_ai?: Json | null
@@ -127,6 +131,7 @@ export type Database = {
         Update: {
           accords?: Json | null
           base_notes?: string[] | null
+          bottle_size?: string | null
           brand?: string | null
           confidence?: number | null
           created_at?: string
@@ -139,6 +144,7 @@ export type Database = {
           longevity?: number | null
           name?: string | null
           occasions?: string[] | null
+          owned?: boolean
           perfumer?: string | null
           plain_description?: string | null
           raw_ai?: Json | null
