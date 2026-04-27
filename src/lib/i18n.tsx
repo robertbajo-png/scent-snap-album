@@ -102,7 +102,7 @@ const sv: Dict = {
   "collection.signed_out_sub": "Logga in för att spara parfymerna du äger.",
 
   // owned toggle on scent page
-  "owned.toggle_label": "Äger jag den här",
+  "owned.toggle_label": "Jag äger den här",
   "owned.toggle_off_desc": "Slå på för att lägga till i din samling.",
   "owned.toggle_on_desc": "Med i din samling.",
   "owned.size_label": "Storlek/koncentration",
