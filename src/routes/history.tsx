@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Heart, Search, Sparkle, X } from "lucide-react";
+import { Heart, Package, Search, Sparkle, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/history")({
   component: HistoryPage,
 });
 
-type FilterId = "all" | Exclude<Reaction, null>;
+type FilterId = "all" | Exclude<Reaction, null> | "owned";
 
 function topAccord(s: ScanRow): string | null {
   const arr = Array.isArray(s.accords) ? (s.accords as any[]) : [];
@@ -34,6 +34,7 @@ function HistoryPage() {
 
   const filters: { id: FilterId; label: string; Icon?: any }[] = [
     { id: "all", label: t("history.filter_all") },
+    { id: "owned", label: t("history.filter_owned"), Icon: Package },
     { id: "like", label: t("history.filter_like"), Icon: Heart },
     { id: "want", label: t("history.filter_want"), Icon: Sparkle },
     { id: "dislike", label: t("history.filter_dislike"), Icon: X },
@@ -68,7 +69,11 @@ function HistoryPage() {
   }, [scans]);
 
   const filtered = scans
-    .filter((s) => (filter === "all" ? true : s.reaction === filter))
+    .filter((s) => {
+      if (filter === "all") return true;
+      if (filter === "owned") return s.owned === true;
+      return s.reaction === filter;
+    })
     .filter((s) => {
       if (!accordFilter) return true;
       const arr = Array.isArray(s.accords) ? (s.accords as any[]) : [];

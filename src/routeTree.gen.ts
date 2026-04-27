@@ -16,6 +16,7 @@ import { Route as MeRouteImport } from './routes/me'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as ForYouRouteImport } from './routes/for-you'
+import { Route as CollectionRouteImport } from './routes/collection'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -56,6 +57,11 @@ const ForYouRoute = ForYouRouteImport.update({
   path: '/for-you',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CollectionRoute = CollectionRouteImport.update({
+  id: '/collection',
+  path: '/collection',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/collection': typeof CollectionRoute
   '/for-you': typeof ForYouRoute
   '/history': typeof HistoryRoute
   '/login': typeof LoginRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/collection': typeof CollectionRoute
   '/for-you': typeof ForYouRoute
   '/history': typeof HistoryRoute
   '/login': typeof LoginRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
+  '/collection': typeof CollectionRoute
   '/for-you': typeof ForYouRoute
   '/history': typeof HistoryRoute
   '/login': typeof LoginRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/collection'
     | '/for-you'
     | '/history'
     | '/login'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/collection'
     | '/for-you'
     | '/history'
     | '/login'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/collection'
     | '/for-you'
     | '/history'
     | '/login'
@@ -163,6 +175,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
+  CollectionRoute: typeof CollectionRoute
   ForYouRoute: typeof ForYouRoute
   HistoryRoute: typeof HistoryRoute
   LoginRoute: typeof LoginRoute
@@ -224,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForYouRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/collection': {
+      id: '/collection'
+      path: '/collection'
+      fullPath: '/collection'
+      preLoaderRoute: typeof CollectionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -259,6 +279,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
+  CollectionRoute: CollectionRoute,
   ForYouRoute: ForYouRoute,
   HistoryRoute: HistoryRoute,
   LoginRoute: LoginRoute,
