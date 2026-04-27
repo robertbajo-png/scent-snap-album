@@ -7,10 +7,20 @@ const corsHeaders = {
 
 const SYSTEM_SV = `Du är en parfymexpert. Baserat på användarens smakprofil och scanninghistorik, föreslå 6 parfymer på SVENSKA.
 Varje förslag ska vara verklig och välkänd. Förklara kort varför den passar (1-2 meningar).
+Vikta signalerna så här (viktigast först):
+1. "liked" och "wanted" parfymer + favoriter (is_favorite) och höga betyg (user_rating 4-5) — använd som starka positiva exempel.
+2. "owned" — vad användaren redan äger; föreslå INTE samma parfymer, men använd profilen för att hitta liknande.
+3. Smakprofilens favorite_accords / favorite_notes.
+4. "disliked" parfymer + disliked_accords / disliked_notes — undvik liknande dofter.
 Returnera ALLTID via verktyget 'return_recommendations'.`;
 
 const SYSTEM_EN = `You are a perfume expert. Based on the user's taste profile and scan history, suggest 6 perfumes in ENGLISH.
 Every suggestion must be real and well-known. Briefly explain why it fits (1-2 sentences).
+Weight the signals like this (most important first):
+1. "liked" and "wanted" perfumes + favorites (is_favorite) and high ratings (user_rating 4-5) — use as strong positive examples.
+2. "owned" — what the user already owns; do NOT suggest the same perfumes, but use the profile to find similar ones.
+3. Taste profile favorite_accords / favorite_notes.
+4. "disliked" perfumes + disliked_accords / disliked_notes — avoid similar scents.
 Always respond via the tool 'return_recommendations'.`;
 
 Deno.serve(async (req) => {
@@ -53,12 +63,30 @@ Deno.serve(async (req) => {
       },
     };
 
+    const scans = Array.isArray(recentScans) ? recentScans : [];
+    const liked = scans.filter((s: any) => s?.reaction === "like").slice(0, 10);
+    const wanted = scans.filter((s: any) => s?.reaction === "want").slice(0, 10);
+    const disliked = scans.filter((s: any) => s?.reaction === "dislike").slice(0, 10);
+    const owned = scans.filter((s: any) => s?.owned === true).slice(0, 20);
+    const favorites = scans.filter((s: any) => s?.is_favorite === true || (typeof s?.user_rating === "number" && s.user_rating >= 4)).slice(0, 10);
+    const other = scans.filter((s: any) => !s?.reaction && !s?.owned && !s?.is_favorite).slice(0, 10);
+
     const userMsg =
       lang === "en"
         ? `Taste profile: ${JSON.stringify(tasteProfile ?? {})}
-Recent scans: ${JSON.stringify((recentScans ?? []).slice(0, 10))}`
+Liked perfumes: ${JSON.stringify(liked)}
+Wanted perfumes: ${JSON.stringify(wanted)}
+Owned perfumes (do NOT recommend these): ${JSON.stringify(owned)}
+Favorites / high-rated: ${JSON.stringify(favorites)}
+Disliked perfumes (avoid similar): ${JSON.stringify(disliked)}
+Other recent scans: ${JSON.stringify(other)}`
         : `Smakprofil: ${JSON.stringify(tasteProfile ?? {})}
-Senaste scanningar: ${JSON.stringify((recentScans ?? []).slice(0, 10))}`;
+Gillade parfymer: ${JSON.stringify(liked)}
+Vill ha-parfymer: ${JSON.stringify(wanted)}
+Ägda parfymer (rekommendera INTE dessa): ${JSON.stringify(owned)}
+Favoriter / högt betygsatta: ${JSON.stringify(favorites)}
+Ogillade parfymer (undvik liknande): ${JSON.stringify(disliked)}
+Andra senaste scanningar: ${JSON.stringify(other)}`;
 
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

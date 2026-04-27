@@ -36,9 +36,9 @@ function ForYouPage() {
       const [{ data: scans }, { data: taste }] = await Promise.all([
         supabase
           .from("scans")
-          .select("brand,name,accords,top_notes,heart_notes,base_notes,user_rating,is_favorite")
+          .select("brand,name,accords,top_notes,heart_notes,base_notes,user_rating,is_favorite,reaction,owned,bottle_size")
           .order("created_at", { ascending: false })
-          .limit(15),
+          .limit(30),
         supabase.from("taste_profile").select("*").eq("user_id", user.id).maybeSingle(),
       ]);
 
