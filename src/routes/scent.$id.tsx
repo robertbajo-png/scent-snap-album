@@ -160,6 +160,44 @@ function ScentDetail() {
         <ReactionPicker value={scan.reaction ?? null} onChange={setReaction} />
       </section>
 
+      <section className="mt-5 rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Package className="h-4 w-4 text-gold" strokeWidth={1.7} />
+            <div>
+              <p className="text-sm font-medium">{t("owned.toggle_label")}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {scan.owned ? t("owned.toggle_on_desc") : t("owned.toggle_off_desc")}
+              </p>
+            </div>
+          </div>
+          <Switch checked={scan.owned} onCheckedChange={toggleOwned} />
+        </div>
+        {scan.owned && (
+          <div className="mt-3 border-t border-border/60 pt-3">
+            <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("owned.size_label")}
+            </label>
+            <div className="mt-1.5 flex gap-2">
+              <Input
+                value={bottleSize}
+                onChange={(e) => setBottleSize(e.target.value)}
+                placeholder={t("owned.size_placeholder")}
+                className="h-10 rounded-xl border-border bg-background/60"
+                maxLength={60}
+              />
+              <Button
+                onClick={saveSize}
+                disabled={savingSize || (bottleSize.trim() === (scan.bottle_size ?? "").trim())}
+                className="h-10 rounded-xl bg-gradient-luxe px-4 text-sm text-primary-foreground"
+              >
+                {savingSize ? <Loader2 className="h-4 w-4 animate-spin" /> : t("owned.size_save")}
+              </Button>
+            </div>
+          </div>
+        )}
+      </section>
+
       {scan.plain_description && (
         <div className="mt-5 rounded-2xl border border-gold/30 bg-gold/5 p-4">
           <p className="text-[10px] font-medium uppercase tracking-wider text-gold">{plainLabel}</p>
