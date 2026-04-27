@@ -204,7 +204,7 @@ function ScanPage() {
       {user && quota.isPremium && (
         <div className="mt-5 flex items-center gap-2 rounded-2xl border border-gold/30 bg-gradient-luxe/10 px-4 py-3">
           <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
-          <p className="text-sm font-medium">Premium aktiv — obegränsade skanningar</p>
+          <p className="text-sm font-medium">{t("home.premium_active")}</p>
         </div>
       )}
 
