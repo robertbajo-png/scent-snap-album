@@ -88,7 +88,7 @@ Favoriter / högt betygsatta: ${JSON.stringify(favorites)}
 Ogillade parfymer (undvik liknande): ${JSON.stringify(disliked)}
 Andra senaste scanningar: ${JSON.stringify(other)}`;
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const callGateway = () => fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -104,6 +104,21 @@ Andra senaste scanningar: ${JSON.stringify(other)}`;
         tool_choice: { type: "function", function: { name: "return_recommendations" } },
       }),
     });
+
+    let resp: Response;
+    try {
+      resp = await callGateway();
+    } catch (err) {
+      console.warn("for-you: first attempt threw, retrying in 1s", err);
+      await new Promise((r) => setTimeout(r, 1000));
+      resp = await callGateway();
+    }
+    // Retry once on transient 5xx (but not on 429/402 which are quota/credits)
+    if (!resp.ok && resp.status >= 500) {
+      console.warn(`for-you: got ${resp.status}, retrying in 1s`);
+      await new Promise((r) => setTimeout(r, 1000));
+      resp = await callGateway();
+    }
 
     if (!resp.ok) {
       const text = await resp.text();
