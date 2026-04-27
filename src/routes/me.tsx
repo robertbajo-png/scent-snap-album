@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LogOut, Settings2, Heart, Camera, Sparkles, Sliders, Globe, Crown, Loader2, Shield } from "lucide-react";
+import { LogOut, Settings2, Heart, Camera, Sparkles, Sliders, Globe, Crown, Loader2, Shield, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -8,6 +8,17 @@ import { useI18n, type Lang } from "@/lib/i18n";
 import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { PaywallDialog } from "@/components/PaywallDialog";
 import { AndroidPremiumBanner } from "@/components/AndroidPremiumBanner";
 import { useQuota } from "@/hooks/useQuota";
@@ -31,6 +42,38 @@ function MePage() {
   const quota = useQuota();
   const { isAdmin } = useIsAdmin();
   const native = useIsNative();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const confirmWord = t("account.delete_confirm_word");
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm.trim().toUpperCase() !== confirmWord) return;
+    setDeleteLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-account", {
+        body: {},
+      });
+      if (error || data?.error) {
+        const code = data?.error;
+        if (code === "active_subscription") {
+          toast.error(t("account.delete_blocked_sub"));
+        } else {
+          toast.error(data?.message || error?.message || t("account.delete_failed"));
+        }
+        setDeleteLoading(false);
+        return;
+      }
+      toast.success(t("account.delete_success"));
+      await signOut();
+      setDeleteOpen(false);
+      navigate({ to: "/" });
+    } catch (e: any) {
+      toast.error(e?.message ?? t("account.delete_failed"));
+      setDeleteLoading(false);
+    }
+  };
 
   const openPortal = async () => {
     setPortalLoading(true);
@@ -242,6 +285,71 @@ function MePage() {
         <LogOut className="mr-2 h-4 w-4" />
         {t("common.logout")}
       </Button>
+
+      <div className="mt-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+        <Link to="/privacy" className="underline hover:text-foreground">
+          {t("account.legal_privacy")}
+        </Link>
+        <span aria-hidden>·</span>
+        <Link to="/terms" className="underline hover:text-foreground">
+          {t("account.legal_terms")}
+        </Link>
+      </div>
+
+      <section className="mt-8 rounded-2xl border border-destructive/30 bg-destructive/5 p-4">
+        <p className="text-[10px] font-medium uppercase tracking-wider text-destructive/80">
+          {t("account.danger_zone")}
+        </p>
+        <p className="mt-2 text-sm font-semibold">{t("account.delete_title")}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t("account.delete_desc")}</p>
+        <Button
+          variant="outline"
+          className="mt-3 h-10 w-full rounded-xl border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          onClick={() => {
+            setDeleteConfirm("");
+            setDeleteOpen(true);
+          }}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          {t("account.delete_button")}
+        </Button>
+      </section>
+
+      <AlertDialog open={deleteOpen} onOpenChange={(o) => !deleteLoading && setDeleteOpen(o)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("account.delete_confirm_title")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("account.delete_confirm_desc")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            value={deleteConfirm}
+            onChange={(e) => setDeleteConfirm(e.target.value)}
+            placeholder={t("account.delete_confirm_placeholder")}
+            autoComplete="off"
+            disabled={deleteLoading}
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteLoading}>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDeleteAccount();
+              }}
+              disabled={deleteLoading || deleteConfirm.trim().toUpperCase() !== confirmWord}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t("account.delete_in_progress")}
+                </>
+              ) : (
+                t("account.delete_confirm_action")
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <PaywallDialog open={paywallOpen} onOpenChange={setPaywallOpen} />
     </AppShell>
