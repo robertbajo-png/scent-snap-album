@@ -131,6 +131,7 @@ const sv: Dict = {
   "me.stat_wants": "Vill ha",
   "me.menu_new_scan": "Ny scanning",
   "me.menu_history": "Doftgarderob",
+  "me.menu_collection": "Min samling",
   "me.menu_for_you": "Personliga förslag",
   "me.menu_taste": "Smakprofil",
   "me.menu_about": "Om ScentSnap",
