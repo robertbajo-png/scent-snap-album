@@ -10,7 +10,7 @@ Givet en bild på en parfymflaska, etikett eller förpackning, identifiera parfy
 
 Regler:
 - Om du inte kan läsa flaskan tydligt, gör en kvalificerad gissning baserat på visuell stil och justera confidence.
-- Noter (top/heart/base) ska vara specifika (t.ex. "Bergamott", "Iris", "Sandelträ", "Ambroxan"). 3-6 per lager.
+- Noter (top/heart/base) ska vara specifika och varierade (t.ex. "Bergamott", "Iris", "Sandelträ", "Ambroxan"). 5-10 per lager — våga ta med både dominerande och mer subtila noter.
 - Accords är breda olfaktoriska familjer med intensity 0-100 (t.ex. "Träig", "Blommig", "Orientalisk", "Citrus", "Gourmand", "Chypré", "Fougère", "Aquatic", "Mossig", "Pudrig").
 - longevity & sillage: 1-5.
 - gender: "Herr" | "Dam" | "Unisex".
@@ -25,7 +25,7 @@ Given a photo of a perfume bottle, label or packaging, identify the perfume and 
 
 Rules:
 - If you cannot read the bottle clearly, make an educated guess based on visual style and adjust confidence accordingly.
-- Notes (top/heart/base) must be specific (e.g. "Bergamot", "Iris", "Sandalwood", "Ambroxan"). 3-6 per layer.
+- Notes (top/heart/base) must be specific and varied (e.g. "Bergamot", "Iris", "Sandalwood", "Ambroxan"). 5-10 per layer — include both dominant and subtler notes.
 - Accords are broad olfactory families with intensity 0-100 (e.g. "Woody", "Floral", "Oriental", "Citrus", "Gourmand", "Chypre", "Fougère", "Aquatic", "Mossy", "Powdery").
 - longevity & sillage: 1-5.
 - gender: must be one of these exact tokens: "Herr" (men), "Dam" (women), "Unisex". Always use these tokens regardless of language.
