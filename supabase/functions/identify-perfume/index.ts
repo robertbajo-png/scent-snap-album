@@ -25,7 +25,7 @@ Given a photo of a perfume bottle, label or packaging, identify the perfume and 
 
 Rules:
 - If you cannot read the bottle clearly, make an educated guess based on visual style and adjust confidence accordingly.
-- Notes (top/heart/base) must be specific (e.g. "Bergamot", "Iris", "Sandalwood", "Ambroxan"). 3-6 per layer.
+- Notes (top/heart/base) must be specific and varied (e.g. "Bergamot", "Iris", "Sandalwood", "Ambroxan"). 5-10 per layer — include both dominant and subtler notes.
 - Accords are broad olfactory families with intensity 0-100 (e.g. "Woody", "Floral", "Oriental", "Citrus", "Gourmand", "Chypre", "Fougère", "Aquatic", "Mossy", "Powdery").
 - longevity & sillage: 1-5.
 - gender: must be one of these exact tokens: "Herr" (men), "Dam" (women), "Unisex". Always use these tokens regardless of language.
