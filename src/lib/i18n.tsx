@@ -111,6 +111,13 @@ const sv: Dict = {
   "owned.size_saved": "Sparat",
   "owned.added": "Tillagd i samlingen",
   "owned.removed": "Borttagen från samlingen",
+  "home.premium_active": "Premium aktiv — obegränsade skanningar",
+  "home.scans_remaining": "{remaining} av {limit} skanningar kvar idag",
+  "home.scans_used": "Du har använt dina gratis-skanningar",
+  "home.scans_used_today": "Du har använt dina gratis-skanningar för idag",
+  "home.upgrade_for_unlimited": "Uppgradera för obegränsad användning",
+  "home.scans_used_toast": "Du har använt dina gratis-skanningar för idag. Försök igen imorgon.",
+  "home.paywall_reason": "Du har använt dina {limit} gratis-skanningar för idag.",
 
   // for-you
   "fy.signed_out_title": "Personliga förslag",
@@ -418,6 +425,13 @@ const en: Dict = {
   "owned.size_saved": "Saved",
   "owned.added": "Added to your collection",
   "owned.removed": "Removed from your collection",
+  "home.premium_active": "Premium active — unlimited scans",
+  "home.scans_remaining": "{remaining} of {limit} scans left today",
+  "home.scans_used": "You've used your free scans",
+  "home.scans_used_today": "You've used your free scans for today",
+  "home.upgrade_for_unlimited": "Upgrade for unlimited use",
+  "home.scans_used_toast": "You've used your free scans for today. Try again tomorrow.",
+  "home.paywall_reason": "You've used your {limit} free scans for today.",
 
   "fy.signed_out_title": "Personal picks",
   "fy.signed_out_sub": "Sign in to get perfumes matching your taste.",

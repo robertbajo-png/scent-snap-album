@@ -74,7 +74,7 @@ function ScanPage() {
     }
     if (!quota.canScan) {
       if (native) {
-        toast.error("Du har använt dina gratis-skanningar för idag. Försök igen imorgon.");
+        toast.error(t("home.scans_used_toast"));
       } else {
         setPaywallOpen(true);
       }
@@ -178,11 +178,11 @@ function ScanPage() {
             <div>
               <p className="text-sm font-medium">
                 {quota.canScan
-                  ? `${quota.remaining} av ${quota.dailyLimit} skanningar kvar idag`
-                  : "Du har använt dina gratis-skanningar"}
+                  ? t("home.scans_remaining", { remaining: quota.remaining, limit: quota.dailyLimit })
+                  : t("home.scans_used")}
               </p>
               <p className="text-xs text-muted-foreground">
-                Uppgradera för obegränsad användning
+                {t("home.upgrade_for_unlimited")}
               </p>
             </div>
           </div>
@@ -195,8 +195,8 @@ function ScanPage() {
           <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
           <p className="text-sm font-medium">
             {quota.canScan
-              ? `${quota.remaining} av ${quota.dailyLimit} skanningar kvar idag`
-              : "Du har använt dina gratis-skanningar för idag"}
+              ? t("home.scans_remaining", { remaining: quota.remaining, limit: quota.dailyLimit })
+              : t("home.scans_used_today")}
           </p>
         </div>
       )}
@@ -204,7 +204,7 @@ function ScanPage() {
       {user && quota.isPremium && (
         <div className="mt-5 flex items-center gap-2 rounded-2xl border border-gold/30 bg-gradient-luxe/10 px-4 py-3">
           <Crown className="h-4 w-4 text-gold" strokeWidth={1.7} />
-          <p className="text-sm font-medium">Premium aktiv — obegränsade skanningar</p>
+          <p className="text-sm font-medium">{t("home.premium_active")}</p>
         </div>
       )}
 
@@ -321,7 +321,7 @@ function ScanPage() {
       )}
 
       <ManualLookupDialog open={lookupOpen} onOpenChange={setLookupOpen} />
-      <PaywallDialog open={paywallOpen} onOpenChange={setPaywallOpen} reason={!quota.canScan ? `Du har använt dina ${quota.dailyLimit} gratis-skanningar för idag.` : undefined} />
+      <PaywallDialog open={paywallOpen} onOpenChange={setPaywallOpen} reason={!quota.canScan ? t("home.paywall_reason", { limit: quota.dailyLimit }) : undefined} />
 
       <section className="mt-10">
         <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-muted-foreground">
