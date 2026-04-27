@@ -31,6 +31,8 @@ export interface ScanRow extends PerfumeData {
   user_notes: string | null;
   is_favorite: boolean;
   reaction: Reaction;
+  owned: boolean;
+  bottle_size: string | null;
   created_at: string;
   updated_at: string;
 }

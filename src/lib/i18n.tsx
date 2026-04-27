@@ -86,9 +86,31 @@ const sv: Dict = {
   "history.filter_like": "Gillar",
   "history.filter_want": "Vill ha",
   "history.filter_dislike": "Ogillar",
+  "history.filter_owned": "Äger",
   "history.all_families": "Alla doftfamiljer",
   "history.empty_none": "Inga parfymer än — börja på startsidan.",
   "history.empty_filter": "Inga träffar.",
+
+  // collection (owned perfumes)
+  "collection.title": "Min samling",
+  "collection.count": "{n} parfymer i din samling",
+  "collection.empty_title": "Din samling är tom",
+  "collection.empty_sub": "Markera en parfym som ”Äger” på dess sida så dyker den upp här.",
+  "collection.empty_cta": "Bläddra i doftgarderoben",
+  "collection.size_unknown": "Storlek ej angiven",
+  "collection.signed_out_title": "Din parfymsamling",
+  "collection.signed_out_sub": "Logga in för att spara parfymerna du äger.",
+
+  // owned toggle on scent page
+  "owned.toggle_label": "Äger jag den här",
+  "owned.toggle_off_desc": "Slå på för att lägga till i din samling.",
+  "owned.toggle_on_desc": "Med i din samling.",
+  "owned.size_label": "Storlek/koncentration",
+  "owned.size_placeholder": "t.ex. EdT 50ml",
+  "owned.size_save": "Spara storlek",
+  "owned.size_saved": "Sparat",
+  "owned.added": "Tillagd i samlingen",
+  "owned.removed": "Borttagen från samlingen",
 
   // for-you
   "fy.signed_out_title": "Personliga förslag",
