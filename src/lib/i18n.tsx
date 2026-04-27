@@ -111,6 +111,7 @@ const sv: Dict = {
   "owned.size_saved": "Sparat",
   "owned.added": "Tillagd i samlingen",
   "owned.removed": "Borttagen från samlingen",
+  "home.premium_active": "Premium aktiv — obegränsade skanningar",
 
   // for-you
   "fy.signed_out_title": "Personliga förslag",
