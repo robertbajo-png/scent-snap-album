@@ -211,9 +211,12 @@ function HistoryPage() {
                     {a && <span>· {a}</span>}
                   </div>
                 </div>
-                {s.reaction === "like" && <Heart className="h-4 w-4 flex-none fill-rose-500 text-rose-500" />}
-                {s.reaction === "want" && <Sparkle className="h-4 w-4 flex-none fill-gold text-gold" />}
-                {s.reaction === "dislike" && <X className="h-4 w-4 flex-none text-muted-foreground" />}
+                <div className="flex flex-none items-center gap-1.5">
+                  {s.owned && <Package className="h-4 w-4 text-gold" strokeWidth={1.7} />}
+                  {s.reaction === "like" && <Heart className="h-4 w-4 fill-rose-500 text-rose-500" />}
+                  {s.reaction === "want" && <Sparkle className="h-4 w-4 fill-gold text-gold" />}
+                  {s.reaction === "dislike" && <X className="h-4 w-4 text-muted-foreground" />}
+                </div>
               </Link>
             );
           })
