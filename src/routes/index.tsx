@@ -74,7 +74,7 @@ function ScanPage() {
     }
     if (!quota.canScan) {
       if (native) {
-        toast.error("Du har använt dina gratis-skanningar för idag. Försök igen imorgon.");
+        toast.error(t("home.scans_used_toast"));
       } else {
         setPaywallOpen(true);
       }
