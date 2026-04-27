@@ -7,10 +7,20 @@ const corsHeaders = {
 
 const SYSTEM_SV = `Du är en parfymexpert. Baserat på användarens smakprofil och scanninghistorik, föreslå 6 parfymer på SVENSKA.
 Varje förslag ska vara verklig och välkänd. Förklara kort varför den passar (1-2 meningar).
+Vikta signalerna så här (viktigast först):
+1. "liked" och "wanted" parfymer + favoriter (is_favorite) och höga betyg (user_rating 4-5) — använd som starka positiva exempel.
+2. "owned" — vad användaren redan äger; föreslå INTE samma parfymer, men använd profilen för att hitta liknande.
+3. Smakprofilens favorite_accords / favorite_notes.
+4. "disliked" parfymer + disliked_accords / disliked_notes — undvik liknande dofter.
 Returnera ALLTID via verktyget 'return_recommendations'.`;
 
 const SYSTEM_EN = `You are a perfume expert. Based on the user's taste profile and scan history, suggest 6 perfumes in ENGLISH.
 Every suggestion must be real and well-known. Briefly explain why it fits (1-2 sentences).
+Weight the signals like this (most important first):
+1. "liked" and "wanted" perfumes + favorites (is_favorite) and high ratings (user_rating 4-5) — use as strong positive examples.
+2. "owned" — what the user already owns; do NOT suggest the same perfumes, but use the profile to find similar ones.
+3. Taste profile favorite_accords / favorite_notes.
+4. "disliked" perfumes + disliked_accords / disliked_notes — avoid similar scents.
 Always respond via the tool 'return_recommendations'.`;
 
 Deno.serve(async (req) => {
