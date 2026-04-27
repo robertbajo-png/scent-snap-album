@@ -419,6 +419,7 @@ const en: Dict = {
   "owned.size_saved": "Saved",
   "owned.added": "Added to your collection",
   "owned.removed": "Removed from your collection",
+  "home.premium_active": "Premium active — unlimited scans",
 
   "fy.signed_out_title": "Personal picks",
   "fy.signed_out_sub": "Sign in to get perfumes matching your taste.",
