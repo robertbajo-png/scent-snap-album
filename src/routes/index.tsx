@@ -321,7 +321,7 @@ function ScanPage() {
       )}
 
       <ManualLookupDialog open={lookupOpen} onOpenChange={setLookupOpen} />
-      <PaywallDialog open={paywallOpen} onOpenChange={setPaywallOpen} reason={!quota.canScan ? `Du har använt dina ${quota.dailyLimit} gratis-skanningar för idag.` : undefined} />
+      <PaywallDialog open={paywallOpen} onOpenChange={setPaywallOpen} reason={!quota.canScan ? t("home.paywall_reason", { limit: quota.dailyLimit }) : undefined} />
 
       <section className="mt-10">
         <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-muted-foreground">
