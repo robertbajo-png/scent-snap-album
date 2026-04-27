@@ -112,6 +112,12 @@ const sv: Dict = {
   "owned.added": "Tillagd i samlingen",
   "owned.removed": "Borttagen från samlingen",
   "home.premium_active": "Premium aktiv — obegränsade skanningar",
+  "home.scans_remaining": "{remaining} av {limit} skanningar kvar idag",
+  "home.scans_used": "Du har använt dina gratis-skanningar",
+  "home.scans_used_today": "Du har använt dina gratis-skanningar för idag",
+  "home.upgrade_for_unlimited": "Uppgradera för obegränsad användning",
+  "home.scans_used_toast": "Du har använt dina gratis-skanningar för idag. Försök igen imorgon.",
+  "home.paywall_reason": "Du har använt dina {limit} gratis-skanningar för idag.",
 
   // for-you
   "fy.signed_out_title": "Personliga förslag",
