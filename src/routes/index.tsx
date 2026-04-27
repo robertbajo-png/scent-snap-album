@@ -178,11 +178,11 @@ function ScanPage() {
             <div>
               <p className="text-sm font-medium">
                 {quota.canScan
-                  ? `${quota.remaining} av ${quota.dailyLimit} skanningar kvar idag`
-                  : "Du har använt dina gratis-skanningar"}
+                  ? t("home.scans_remaining", { remaining: quota.remaining, limit: quota.dailyLimit })
+                  : t("home.scans_used")}
               </p>
               <p className="text-xs text-muted-foreground">
-                Uppgradera för obegränsad användning
+                {t("home.upgrade_for_unlimited")}
               </p>
             </div>
           </div>
