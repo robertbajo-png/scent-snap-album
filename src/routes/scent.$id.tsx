@@ -1,12 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Star, Trash2, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, Star, Trash2, Loader2, Sparkles, Package } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { NotePyramid } from "@/components/NotePyramid";
 import { AccordBars } from "@/components/AccordBars";
@@ -28,6 +30,8 @@ function ScentDetail() {
   const [loading, setLoading] = useState(true);
   const [savingNotes, setSavingNotes] = useState(false);
   const [notes, setNotes] = useState("");
+  const [bottleSize, setBottleSize] = useState("");
+  const [savingSize, setSavingSize] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -44,6 +48,7 @@ function ScentDetail() {
       }
       setScan(data as any);
       setNotes((data as any).user_notes ?? "");
+      setBottleSize((data as any).bottle_size ?? "");
       setLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -70,6 +75,23 @@ function ScentDetail() {
     await supabase.from("scans").update({ user_notes: notes }).eq("id", scan.id);
     setSavingNotes(false);
     toast.success(t("scent.note_saved"));
+  };
+
+  const toggleOwned = async (next: boolean) => {
+    if (!scan) return;
+    setScan({ ...scan, owned: next });
+    await supabase.from("scans").update({ owned: next }).eq("id", scan.id);
+    toast.success(next ? t("owned.added") : t("owned.removed"));
+  };
+
+  const saveSize = async () => {
+    if (!scan) return;
+    setSavingSize(true);
+    const trimmed = bottleSize.trim() || null;
+    await supabase.from("scans").update({ bottle_size: trimmed }).eq("id", scan.id);
+    setScan({ ...scan, bottle_size: trimmed });
+    setSavingSize(false);
+    toast.success(t("owned.size_saved"));
   };
 
   const remove = async () => {
@@ -136,6 +158,44 @@ function ScentDetail() {
 
       <section className="mt-5">
         <ReactionPicker value={scan.reaction ?? null} onChange={setReaction} />
+      </section>
+
+      <section className="mt-5 rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Package className="h-4 w-4 text-gold" strokeWidth={1.7} />
+            <div>
+              <p className="text-sm font-medium">{t("owned.toggle_label")}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {scan.owned ? t("owned.toggle_on_desc") : t("owned.toggle_off_desc")}
+              </p>
+            </div>
+          </div>
+          <Switch checked={scan.owned} onCheckedChange={toggleOwned} />
+        </div>
+        {scan.owned && (
+          <div className="mt-3 border-t border-border/60 pt-3">
+            <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("owned.size_label")}
+            </label>
+            <div className="mt-1.5 flex gap-2">
+              <Input
+                value={bottleSize}
+                onChange={(e) => setBottleSize(e.target.value)}
+                placeholder={t("owned.size_placeholder")}
+                className="h-10 rounded-xl border-border bg-background/60"
+                maxLength={60}
+              />
+              <Button
+                onClick={saveSize}
+                disabled={savingSize || (bottleSize.trim() === (scan.bottle_size ?? "").trim())}
+                className="h-10 rounded-xl bg-gradient-luxe px-4 text-sm text-primary-foreground"
+              >
+                {savingSize ? <Loader2 className="h-4 w-4 animate-spin" /> : t("owned.size_save")}
+              </Button>
+            </div>
+          </div>
+        )}
       </section>
 
       {scan.plain_description && (

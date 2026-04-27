@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LogOut, Settings2, Heart, Camera, Sparkles, Sliders, Globe, Crown, Loader2, Shield, Trash2 } from "lucide-react";
+import { LogOut, Settings2, Heart, Camera, Sparkles, Sliders, Globe, Crown, Loader2, Shield, Trash2, Package } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -244,6 +244,7 @@ function MePage() {
       <div className="mt-6 space-y-2">
         <MenuLink to="/" icon={Camera} label={t("me.menu_new_scan")} />
         <MenuLink to="/history" icon={Heart} label={t("me.menu_history")} />
+        <MenuLink to="/collection" icon={Package} label={t("me.menu_collection")} />
         <MenuLink to="/for-you" icon={Sparkles} label={t("me.menu_for_you")} />
         <MenuLink to="/taste" icon={Sliders} label={t("me.menu_taste")} />
         <MenuLink to="/about" icon={Settings2} label={t("me.menu_about")} />
