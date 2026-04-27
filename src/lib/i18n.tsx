@@ -426,6 +426,12 @@ const en: Dict = {
   "owned.added": "Added to your collection",
   "owned.removed": "Removed from your collection",
   "home.premium_active": "Premium active — unlimited scans",
+  "home.scans_remaining": "{remaining} of {limit} scans left today",
+  "home.scans_used": "You've used your free scans",
+  "home.scans_used_today": "You've used your free scans for today",
+  "home.upgrade_for_unlimited": "Upgrade for unlimited use",
+  "home.scans_used_toast": "You've used your free scans for today. Try again tomorrow.",
+  "home.paywall_reason": "You've used your {limit} free scans for today.",
 
   "fy.signed_out_title": "Personal picks",
   "fy.signed_out_sub": "Sign in to get perfumes matching your taste.",
