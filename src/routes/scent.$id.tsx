@@ -84,6 +84,13 @@ function ScentDetail() {
     toast.success(next ? t("owned.added") : t("owned.removed"));
   };
 
+  const toggleTried = async (next: boolean) => {
+    if (!scan) return;
+    setScan({ ...scan, tried: next });
+    await supabase.from("scans").update({ tried: next }).eq("id", scan.id);
+    toast.success(next ? t("tried.added") : t("tried.removed"));
+  };
+
   const saveSize = async () => {
     if (!scan) return;
     setSavingSize(true);
