@@ -326,6 +326,43 @@ const sv: Dict = {
   "meta.privacy_desc": "Hur ScentSnap hanterar dina uppgifter, bilder och betalningar.",
   "meta.terms_title": "Användarvillkor — ScentSnap",
   "meta.terms_desc": "Villkor för att använda ScentSnap.",
+
+  // tried status
+  "tried.toggle_label": "Har testat",
+  "tried.toggle_on_desc": "Du har provat den här parfymen",
+  "tried.toggle_off_desc": "Markera om du har provat den",
+  "tried.added": "Markerad som testad",
+  "tried.removed": "Borttagen från testade",
+
+  // public profile (settings on /me)
+  "me.public_section": "Publik parfymhylla",
+  "me.public_desc": "Låt andra se vad du äger, vill ha och har testat. Vi visar aldrig din e-post eller ditt riktiga namn.",
+  "me.username_label": "Användarnamn",
+  "me.username_placeholder": "t.ex. dofthunter",
+  "me.username_save": "Spara",
+  "me.username_invalid": "3–20 tecken: a–z, 0–9, _ eller -",
+  "me.username_taken": "Användarnamnet är upptaget",
+  "me.username_saved": "Användarnamn sparat",
+  "me.public_toggle": "Gör min parfymhylla publik",
+  "me.public_on": "Din hylla är publik",
+  "me.public_off": "Din hylla är privat",
+  "me.public_need_username": "Välj ett användarnamn först",
+  "me.view_public": "Visa min publika profil",
+  "me.copy_link": "Kopiera länk",
+  "me.link_copied": "Länk kopierad",
+
+  // public profile page
+  "public.title_suffix": "parfymhylla",
+  "public.shelf": "I hyllan",
+  "public.owns": "Äger",
+  "public.wants": "Vill ha",
+  "public.tried": "Testat",
+  "public.favorites": "Favoriter",
+  "public.empty": "Den här hyllan är tom än så länge.",
+  "public.private_title": "Profilen är inte tillgänglig",
+  "public.private_desc": "Användaren finns inte eller har valt att hålla sin hylla privat.",
+  "public.back_home": "Till startsidan",
+  "public.powered_by": "via ScentSnap",
 };
 
 const en: Dict = {
@@ -624,6 +661,43 @@ const en: Dict = {
   "meta.privacy_desc": "How ScentSnap handles your data, images and payments.",
   "meta.terms_title": "Terms of Service — ScentSnap",
   "meta.terms_desc": "Terms for using ScentSnap.",
+
+  // tried status
+  "tried.toggle_label": "Tried it",
+  "tried.toggle_on_desc": "You've tried this perfume",
+  "tried.toggle_off_desc": "Mark if you've tried it",
+  "tried.added": "Marked as tried",
+  "tried.removed": "Removed from tried",
+
+  // public profile (settings on /me)
+  "me.public_section": "Public shelf",
+  "me.public_desc": "Let others see what you own, want and have tried. We never show your email or real name.",
+  "me.username_label": "Username",
+  "me.username_placeholder": "e.g. scenthunter",
+  "me.username_save": "Save",
+  "me.username_invalid": "3–20 chars: a–z, 0–9, _ or -",
+  "me.username_taken": "Username is taken",
+  "me.username_saved": "Username saved",
+  "me.public_toggle": "Make my shelf public",
+  "me.public_on": "Your shelf is public",
+  "me.public_off": "Your shelf is private",
+  "me.public_need_username": "Pick a username first",
+  "me.view_public": "View my public profile",
+  "me.copy_link": "Copy link",
+  "me.link_copied": "Link copied",
+
+  // public profile page
+  "public.title_suffix": "shelf",
+  "public.shelf": "Shelf",
+  "public.owns": "Owns",
+  "public.wants": "Wants",
+  "public.tried": "Tried",
+  "public.favorites": "Favorites",
+  "public.empty": "This shelf is empty for now.",
+  "public.private_title": "Profile not available",
+  "public.private_desc": "The user doesn't exist or has chosen to keep their shelf private.",
+  "public.back_home": "Back to home",
+  "public.powered_by": "on ScentSnap",
 };
 
 const dictionaries: Record<Lang, Dict> = { sv, en };
