@@ -161,6 +161,7 @@ function MePage() {
         supabase.from("scans").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("reaction", "want"),
       ]);
       setProfile(p);
+      if (p?.username) setUsernameInput(p.username);
       setStats({ total: total ?? 0, likes: likes ?? 0, wants: wants ?? 0 });
     })();
   }, [user]);
