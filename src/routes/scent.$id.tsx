@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Star, Trash2, Loader2, Sparkles, Package } from "lucide-react";
+import { ArrowLeft, Star, Trash2, Loader2, Sparkles, Package, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -82,6 +82,13 @@ function ScentDetail() {
     setScan({ ...scan, owned: next });
     await supabase.from("scans").update({ owned: next }).eq("id", scan.id);
     toast.success(next ? t("owned.added") : t("owned.removed"));
+  };
+
+  const toggleTried = async (next: boolean) => {
+    if (!scan) return;
+    setScan({ ...scan, tried: next });
+    await supabase.from("scans").update({ tried: next }).eq("id", scan.id);
+    toast.success(next ? t("tried.added") : t("tried.removed"));
   };
 
   const saveSize = async () => {
@@ -196,6 +203,21 @@ function ScentDetail() {
             </div>
           </div>
         )}
+      </section>
+
+      <section className="mt-3 rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <FlaskConical className="h-4 w-4 text-gold" strokeWidth={1.7} />
+            <div>
+              <p className="text-sm font-medium">{t("tried.toggle_label")}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {scan.tried ? t("tried.toggle_on_desc") : t("tried.toggle_off_desc")}
+              </p>
+            </div>
+          </div>
+          <Switch checked={!!scan.tried} onCheckedChange={toggleTried} />
+        </div>
       </section>
 
       {scan.plain_description && (

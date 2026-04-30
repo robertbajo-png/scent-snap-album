@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LogOut, Settings2, Heart, Camera, Sparkles, Sliders, Globe, Crown, Loader2, Shield, Trash2, Package } from "lucide-react";
+import { LogOut, Settings2, Heart, Camera, Sparkles, Sliders, Globe, Crown, Loader2, Shield, Trash2, Package, Share2, Copy, ExternalLink } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -45,6 +46,63 @@ function MePage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [usernameInput, setUsernameInput] = useState("");
+  const [usernameSaving, setUsernameSaving] = useState(false);
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [publicSaving, setPublicSaving] = useState(false);
+
+  const usernameRegex = /^[a-z0-9_-]{3,20}$/;
+
+  const saveUsername = async () => {
+    if (!user) return;
+    const v = usernameInput.trim().toLowerCase();
+    setUsernameError(null);
+    if (!usernameRegex.test(v)) {
+      setUsernameError(t("me.username_invalid"));
+      return;
+    }
+    setUsernameSaving(true);
+    const { error } = await supabase.from("profiles").update({ username: v }).eq("id", user.id);
+    setUsernameSaving(false);
+    if (error) {
+      if (error.code === "23505" || /duplicate|unique/i.test(error.message)) {
+        setUsernameError(t("me.username_taken"));
+      } else {
+        setUsernameError(error.message);
+      }
+      return;
+    }
+    setProfile({ ...profile, username: v });
+    toast.success(t("me.username_saved"));
+  };
+
+  const togglePublic = async (next: boolean) => {
+    if (!user) return;
+    if (next && !profile?.username) {
+      toast.error(t("me.public_need_username"));
+      return;
+    }
+    setPublicSaving(true);
+    setProfile({ ...profile, is_public: next });
+    const { error } = await supabase.from("profiles").update({ is_public: next }).eq("id", user.id);
+    setPublicSaving(false);
+    if (error) {
+      setProfile({ ...profile, is_public: !next });
+      toast.error(error.message);
+    }
+  };
+
+  const copyPublicLink = async () => {
+    if (!profile?.username) return;
+    const url = `${window.location.origin}/u/${profile.username}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success(t("me.link_copied"));
+    } catch {
+      toast.error("Could not copy");
+    }
+  };
+
 
   const confirmWord = t("account.delete_confirm_word");
 
@@ -103,6 +161,7 @@ function MePage() {
         supabase.from("scans").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("reaction", "want"),
       ]);
       setProfile(p);
+      if (p?.username) setUsernameInput(p.username);
       setStats({ total: total ?? 0, likes: likes ?? 0, wants: wants ?? 0 });
     })();
   }, [user]);
@@ -250,6 +309,81 @@ function MePage() {
         <MenuLink to="/about" icon={Settings2} label={t("me.menu_about")} />
         {isAdmin && <MenuLink to="/admin" icon={Shield} label="Admin" />}
       </div>
+
+      <section className="mt-6 rounded-2xl border border-border/60 bg-card/60 p-4">
+        <div className="flex items-center gap-2">
+          <Share2 className="h-4 w-4 text-gold" strokeWidth={1.7} />
+          <p className="text-sm font-medium">{t("me.public_section")}</p>
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">{t("me.public_desc")}</p>
+
+        <div className="mt-4">
+          <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            {t("me.username_label")}
+          </label>
+          <div className="mt-1.5 flex gap-2">
+            <div className="flex h-10 flex-1 items-center rounded-xl border border-border bg-background/60 px-3">
+              <span className="text-sm text-muted-foreground">@</span>
+              <input
+                value={usernameInput}
+                onChange={(e) => {
+                  setUsernameInput(e.target.value.toLowerCase());
+                  setUsernameError(null);
+                }}
+                placeholder={t("me.username_placeholder")}
+                className="h-full flex-1 bg-transparent pl-1 text-sm outline-none"
+                maxLength={20}
+                autoComplete="off"
+              />
+            </div>
+            <Button
+              onClick={saveUsername}
+              disabled={usernameSaving || usernameInput.trim().toLowerCase() === (profile?.username ?? "")}
+              className="h-10 rounded-xl bg-gradient-luxe px-4 text-sm text-primary-foreground"
+            >
+              {usernameSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : t("me.username_save")}
+            </Button>
+          </div>
+          {usernameError && (
+            <p className="mt-1.5 text-xs text-destructive">{usernameError}</p>
+          )}
+        </div>
+
+        <div className="mt-5 flex items-center justify-between gap-3 border-t border-border/60 pt-4">
+          <div className="min-w-0">
+            <p className="text-sm font-medium">{t("me.public_toggle")}</p>
+            <p className="text-[11px] text-muted-foreground">
+              {profile?.is_public ? t("me.public_on") : t("me.public_off")}
+            </p>
+          </div>
+          <Switch
+            checked={!!profile?.is_public}
+            onCheckedChange={togglePublic}
+            disabled={publicSaving || !profile?.username}
+          />
+        </div>
+
+        {profile?.is_public && profile?.username && (
+          <div className="mt-4 flex gap-2">
+            <Link
+              to="/u/$username"
+              params={{ username: profile.username }}
+              className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card/60 text-xs font-medium hover:bg-card"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              {t("me.view_public")}
+            </Link>
+            <Button
+              variant="outline"
+              onClick={copyPublicLink}
+              className="h-10 rounded-xl px-3 text-xs"
+            >
+              <Copy className="mr-1.5 h-3.5 w-3.5" />
+              {t("me.copy_link")}
+            </Button>
+          </div>
+        )}
+      </section>
 
       <section className="mt-6 rounded-2xl border border-border/60 bg-card/60 p-4">
         <div className="flex items-center gap-2">

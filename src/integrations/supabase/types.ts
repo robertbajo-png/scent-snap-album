@@ -45,7 +45,9 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          is_public: boolean
           updated_at: string
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -53,7 +55,9 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id: string
+          is_public?: boolean
           updated_at?: string
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -61,7 +65,9 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          is_public?: boolean
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -91,6 +97,7 @@ export type Database = {
           sillage: number | null
           similar_perfumes: Json | null
           top_notes: string[] | null
+          tried: boolean
           updated_at: string
           user_id: string
           user_notes: string | null
@@ -122,6 +129,7 @@ export type Database = {
           sillage?: number | null
           similar_perfumes?: Json | null
           top_notes?: string[] | null
+          tried?: boolean
           updated_at?: string
           user_id: string
           user_notes?: string | null
@@ -153,6 +161,7 @@ export type Database = {
           sillage?: number | null
           similar_perfumes?: Json | null
           top_notes?: string[] | null
+          tried?: boolean
           updated_at?: string
           user_id?: string
           user_notes?: string | null
@@ -275,6 +284,31 @@ export type Database = {
     }
     Functions: {
       get_daily_scan_count: { Args: { user_uuid: string }; Returns: number }
+      get_public_collection: {
+        Args: { _username: string }
+        Returns: {
+          bottle_size: string
+          brand: string
+          id: string
+          image_url: string
+          is_favorite: boolean
+          name: string
+          owned: boolean
+          reaction: string
+          tried: boolean
+          updated_at: string
+        }[]
+      }
+      get_public_profile: {
+        Args: { _username: string }
+        Returns: {
+          favorite_count: number
+          owned_count: number
+          tried_count: number
+          username: string
+          want_count: number
+        }[]
+      }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
