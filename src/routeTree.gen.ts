@@ -20,6 +20,7 @@ import { Route as CollectionRouteImport } from './routes/collection'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as ScentIdRouteImport } from './routes/scent.$id'
 
 const TermsRoute = TermsRouteImport.update({
@@ -77,6 +78,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UUsernameRoute = UUsernameRouteImport.update({
+  id: '/u/$username',
+  path: '/u/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ScentIdRoute = ScentIdRouteImport.update({
   id: '/scent/$id',
   path: '/scent/$id',
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/taste': typeof TasteRoute
   '/terms': typeof TermsRoute
   '/scent/$id': typeof ScentIdRoute
+  '/u/$username': typeof UUsernameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/taste': typeof TasteRoute
   '/terms': typeof TermsRoute
   '/scent/$id': typeof ScentIdRoute
+  '/u/$username': typeof UUsernameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/taste': typeof TasteRoute
   '/terms': typeof TermsRoute
   '/scent/$id': typeof ScentIdRoute
+  '/u/$username': typeof UUsernameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/taste'
     | '/terms'
     | '/scent/$id'
+    | '/u/$username'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/taste'
     | '/terms'
     | '/scent/$id'
+    | '/u/$username'
   id:
     | '__root__'
     | '/'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/taste'
     | '/terms'
     | '/scent/$id'
+    | '/u/$username'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -184,6 +196,7 @@ export interface RootRouteChildren {
   TasteRoute: typeof TasteRoute
   TermsRoute: typeof TermsRoute
   ScentIdRoute: typeof ScentIdRoute
+  UUsernameRoute: typeof UUsernameRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -265,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/u/$username': {
+      id: '/u/$username'
+      path: '/u/$username'
+      fullPath: '/u/$username'
+      preLoaderRoute: typeof UUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/scent/$id': {
       id: '/scent/$id'
       path: '/scent/$id'
@@ -288,6 +308,7 @@ const rootRouteChildren: RootRouteChildren = {
   TasteRoute: TasteRoute,
   TermsRoute: TermsRoute,
   ScentIdRoute: ScentIdRoute,
+  UUsernameRoute: UUsernameRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
