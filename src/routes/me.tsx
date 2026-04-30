@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LogOut, Settings2, Heart, Camera, Sparkles, Sliders, Globe, Crown, Loader2, Shield, Trash2, Package } from "lucide-react";
+import { LogOut, Settings2, Heart, Camera, Sparkles, Sliders, Globe, Crown, Loader2, Shield, Trash2, Package, Share2, Copy, ExternalLink } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -45,6 +46,63 @@ function MePage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [usernameInput, setUsernameInput] = useState("");
+  const [usernameSaving, setUsernameSaving] = useState(false);
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [publicSaving, setPublicSaving] = useState(false);
+
+  const usernameRegex = /^[a-z0-9_-]{3,20}$/;
+
+  const saveUsername = async () => {
+    if (!user) return;
+    const v = usernameInput.trim().toLowerCase();
+    setUsernameError(null);
+    if (!usernameRegex.test(v)) {
+      setUsernameError(t("me.username_invalid"));
+      return;
+    }
+    setUsernameSaving(true);
+    const { error } = await supabase.from("profiles").update({ username: v }).eq("id", user.id);
+    setUsernameSaving(false);
+    if (error) {
+      if (error.code === "23505" || /duplicate|unique/i.test(error.message)) {
+        setUsernameError(t("me.username_taken"));
+      } else {
+        setUsernameError(error.message);
+      }
+      return;
+    }
+    setProfile({ ...profile, username: v });
+    toast.success(t("me.username_saved"));
+  };
+
+  const togglePublic = async (next: boolean) => {
+    if (!user) return;
+    if (next && !profile?.username) {
+      toast.error(t("me.public_need_username"));
+      return;
+    }
+    setPublicSaving(true);
+    setProfile({ ...profile, is_public: next });
+    const { error } = await supabase.from("profiles").update({ is_public: next }).eq("id", user.id);
+    setPublicSaving(false);
+    if (error) {
+      setProfile({ ...profile, is_public: !next });
+      toast.error(error.message);
+    }
+  };
+
+  const copyPublicLink = async () => {
+    if (!profile?.username) return;
+    const url = `${window.location.origin}/u/${profile.username}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success(t("me.link_copied"));
+    } catch {
+      toast.error("Could not copy");
+    }
+  };
+
 
   const confirmWord = t("account.delete_confirm_word");
 
