@@ -312,6 +312,81 @@ function MePage() {
 
       <section className="mt-6 rounded-2xl border border-border/60 bg-card/60 p-4">
         <div className="flex items-center gap-2">
+          <Share2 className="h-4 w-4 text-gold" strokeWidth={1.7} />
+          <p className="text-sm font-medium">{t("me.public_section")}</p>
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">{t("me.public_desc")}</p>
+
+        <div className="mt-4">
+          <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            {t("me.username_label")}
+          </label>
+          <div className="mt-1.5 flex gap-2">
+            <div className="flex h-10 flex-1 items-center rounded-xl border border-border bg-background/60 px-3">
+              <span className="text-sm text-muted-foreground">@</span>
+              <input
+                value={usernameInput}
+                onChange={(e) => {
+                  setUsernameInput(e.target.value.toLowerCase());
+                  setUsernameError(null);
+                }}
+                placeholder={t("me.username_placeholder")}
+                className="h-full flex-1 bg-transparent pl-1 text-sm outline-none"
+                maxLength={20}
+                autoComplete="off"
+              />
+            </div>
+            <Button
+              onClick={saveUsername}
+              disabled={usernameSaving || usernameInput.trim().toLowerCase() === (profile?.username ?? "")}
+              className="h-10 rounded-xl bg-gradient-luxe px-4 text-sm text-primary-foreground"
+            >
+              {usernameSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : t("me.username_save")}
+            </Button>
+          </div>
+          {usernameError && (
+            <p className="mt-1.5 text-xs text-destructive">{usernameError}</p>
+          )}
+        </div>
+
+        <div className="mt-5 flex items-center justify-between gap-3 border-t border-border/60 pt-4">
+          <div className="min-w-0">
+            <p className="text-sm font-medium">{t("me.public_toggle")}</p>
+            <p className="text-[11px] text-muted-foreground">
+              {profile?.is_public ? t("me.public_on") : t("me.public_off")}
+            </p>
+          </div>
+          <Switch
+            checked={!!profile?.is_public}
+            onCheckedChange={togglePublic}
+            disabled={publicSaving || !profile?.username}
+          />
+        </div>
+
+        {profile?.is_public && profile?.username && (
+          <div className="mt-4 flex gap-2">
+            <Link
+              to="/u/$username"
+              params={{ username: profile.username }}
+              className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card/60 text-xs font-medium hover:bg-card"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              {t("me.view_public")}
+            </Link>
+            <Button
+              variant="outline"
+              onClick={copyPublicLink}
+              className="h-10 rounded-xl px-3 text-xs"
+            >
+              <Copy className="mr-1.5 h-3.5 w-3.5" />
+              {t("me.copy_link")}
+            </Button>
+          </div>
+        )}
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-border/60 bg-card/60 p-4">
+        <div className="flex items-center gap-2">
           <Globe className="h-4 w-4 text-gold" strokeWidth={1.7} />
           <p className="text-sm font-medium">{t("me.language")}</p>
         </div>
