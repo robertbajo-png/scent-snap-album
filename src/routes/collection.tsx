@@ -135,7 +135,7 @@ function CollectionPage() {
               )}
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{s.brand}</p>
-                <p className="truncate font-display text-lg leading-tight">{s.name}</p>
+                <p className="line-clamp-2 break-words font-display text-lg leading-tight">{s.name}</p>
                 <p className="mt-1 text-[11px] text-gold">
                   {s.bottle_size?.trim() || t("collection.size_unknown")}
                 </p>
