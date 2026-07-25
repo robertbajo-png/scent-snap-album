@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "app.lovable.scentsnap",
+  appId: "com.bajoai.scentsnap",
   appName: "ScentSnap",
   // Required field, but unused at runtime when `server.url` is set.
   // We still need a placeholder file so `cap sync` doesn't error.

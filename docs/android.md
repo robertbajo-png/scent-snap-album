@@ -106,7 +106,7 @@ shipped as free-only.
 
 ## App identity
 
-- **Application ID**: `app.lovable.scentsnap` (set in `capacitor.config.ts`)
+- **Application ID**: `com.bajoai.scentsnap` (set in `capacitor.config.ts`)
 - **Display name**: ScentSnap
 - **Live URL loaded by WebView**: `https://scent-snap-album.lovable.app`
 - Change any of these by editing `capacitor.config.ts` and re-running
