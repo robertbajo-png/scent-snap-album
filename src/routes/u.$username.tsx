@@ -221,7 +221,7 @@ function Grid({ items }: { items: PublicScent[] }) {
           )}
           <div className="p-2.5">
             <p className="text-[9px] uppercase tracking-wider text-muted-foreground">{s.brand}</p>
-            <p className="truncate text-sm font-medium leading-tight">{s.name}</p>
+            <p className="line-clamp-2 break-words text-sm font-medium leading-tight">{s.name}</p>
           </div>
         </div>
       ))}

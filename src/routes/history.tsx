@@ -205,7 +205,7 @@ function HistoryPage() {
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{s.brand}</p>
-                  <p className="truncate font-display text-lg leading-tight">{s.name}</p>
+                  <p className="line-clamp-2 break-words font-display text-lg leading-tight">{s.name}</p>
                   <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
                     <span>{formatRelative(s.created_at, lang)}</span>
                     {a && <span>· {a}</span>}
